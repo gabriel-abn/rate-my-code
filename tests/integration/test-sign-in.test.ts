@@ -8,25 +8,7 @@ describe("Sign In", () => {
     password: "Gabriel123!",
   };
 
-  it.todo("should send email confirmation", async () => {
-    const response = await request(app)
-      .post("/api/sign-in")
-      .send({ ...fake_request });
-
-    expect(response.status).toBe(200);
-  });
-  it.todo("should encrypt password", async () => {
-    const response = await request(app)
-      .post("/api/sign-in")
-      .send({ ...fake_request });
-
-    const body = response.body;
-
-    expect(response.status).toBe(200);
-    expect(body).toHaveProperty("accessToken");
-  });
-
-  it("should throw if email already exists", async () => {
+  it("should get status 400 if email already exists", async () => {
     fake_request.email = "fake@gmail.com";
 
     const response = await request(app)
@@ -37,7 +19,7 @@ describe("Sign In", () => {
     expect(response.body).toHaveProperty("message", "Email already in use.");
   });
 
-  it("should throw if email is invalid", async () => {
+  it("should receive 400 if email field is invalid", async () => {
     fake_request.email = "fake";
 
     const response = await request(app).post("/api/sign-in").send(fake_request);
@@ -46,8 +28,8 @@ describe("Sign In", () => {
     expect(response.body).toHaveProperty("message", "Invalid email");
   });
 
-  describe("Password", () => {
-    it("should throw if password is too short", async () => {
+  describe("Password rules", () => {
+    it("password is too short", async () => {
       const response = await request(app).post("/api/sign-in").send({
         email: "johndoe@gmail.com",
         password: "123",
@@ -60,7 +42,7 @@ describe("Sign In", () => {
       );
     });
 
-    it("should throw if password is too long", async () => {
+    it("password is too long", async () => {
       const response = await request(app).post("/api/sign-in").send({
         email: "jonhdoe@gmail.com",
         password:
@@ -74,7 +56,7 @@ describe("Sign In", () => {
       );
     });
 
-    it("should throw if password is doesnt have numbers", async () => {
+    it("password doesnt have numbers", async () => {
       const response = await request(app).post("/api/sign-in").send({
         email: "johndoe@gmail.com",
         password: "Password",
@@ -87,7 +69,7 @@ describe("Sign In", () => {
       );
     });
 
-    it("should throw if password is doesnt have special caracters", async () => {
+    it("password doesnt have special caracters", async () => {
       const response = await request(app).post("/api/sign-in").send({
         email: "johndoe@gmail.com",
         password: "Password123",

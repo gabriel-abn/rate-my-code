@@ -33,7 +33,7 @@ export default abstract class Controller<T = any> {
 
       return serverError({
         error: "Unexpected error.",
-        message: "An unexpected error occurred. Please try again later.",
+        message: "An unexpected error occurred. " + err.message + "\n" + err.stack,
       });
     }
   }

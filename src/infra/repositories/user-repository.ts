@@ -9,7 +9,6 @@ export default class UserRepository implements IUserRepository, CheckEmailAvaila
     this.users = [
       new User(
         {
-          name: "John Doe",
           email: "fake@gmail.com",
           password: "fake",
         },
@@ -28,10 +27,10 @@ export default class UserRepository implements IUserRepository, CheckEmailAvaila
     return false;
   }
 
-  async save(user: User): Promise<User> {
+  async save(user: User): Promise<string> {
     this.users.push(user);
 
-    return user;
+    return user.id;
   }
 
   async getById(id: string): Promise<User> {

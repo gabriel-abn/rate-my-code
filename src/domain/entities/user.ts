@@ -1,18 +1,29 @@
 import { Entity } from "@domain/common/entity";
 
 type UserProps = {
-  name: string;
+  profile?: {
+    firstName: string;
+    lastName: string;
+    avatar: string;
+  };
   email: string;
   password: string;
 };
 
 class User extends Entity<UserProps> {
-  constructor(props: UserProps, id: string) {
+  constructor(props: Omit<UserProps, "profile">, id: string) {
     super(props, id);
   }
 
-  get name(): string {
-    return this.props.name;
+  get profile(): { firstName: string; lastName: string; avatar: string } {
+    return this.props.profile;
+  }
+
+  set profile(profile: Partial<UserProps["profile"]>) {
+    this.props.profile = {
+      ...this.props.profile,
+      ...profile,
+    };
   }
 
   get email(): string {

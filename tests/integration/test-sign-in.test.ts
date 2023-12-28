@@ -3,12 +3,19 @@ import app from "@main/server";
 import request from "supertest";
 
 describe("Sign In", () => {
-  const fake_request = {
-    email: "gabriel@gmail.com",
-    password: "Gabriel123!",
+  let fake_request: {
+    email: string;
+    password: string;
   };
 
-  it("should get status 400 if email already exists", async () => {
+  beforeEach(() => {
+    fake_request = {
+      email: "gabriel@gmail.com",
+      password: "Gabriel123!",
+    };
+  });
+
+  it("should receive 400 if email already exists", async () => {
     fake_request.email = "fake@gmail.com";
 
     const response = await request(app)
@@ -81,5 +88,12 @@ describe("Sign In", () => {
         "Password must contain at least one special character.",
       );
     });
+  });
+
+  it("should receive 200 if email and password are valid", async () => {
+    const response = await request(app).post("/api/sign-in").send(fake_request);
+
+    expect(response.body).toHaveProperty("accessToken");
+    expect(response.status).toBe(200);
   });
 });

@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "lint-staged": "lint-staged",
-    "test": "vitest --coverage"
+    "test:unit": "vitest -c ./tests/config/vitest.unit.config.ts --coverage",
+    "test:integration": "vitest -c ./tests/config/vitest.integration.config.ts --coverage",
+    "test:all": "vitest --coverage"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [

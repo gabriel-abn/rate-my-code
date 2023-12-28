@@ -1,12 +1,12 @@
 namespace SignIn {
-  export interface Params {
+  type Params = {
     email: string;
     password: string;
-  }
+  };
 
-  export interface Result {
+  type Result = {
     accessToken: string;
-  }
+  };
 
   export interface UseCase {
     execute(data: Params): Promise<Result>;

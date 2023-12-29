@@ -33,6 +33,10 @@ class User extends Entity<UserProps> {
   get password(): string {
     return this.props.password;
   }
+
+  static restore(props: UserProps, id: string): User {
+    return new User(props, id);
+  }
 }
 
 export { User, UserProps };

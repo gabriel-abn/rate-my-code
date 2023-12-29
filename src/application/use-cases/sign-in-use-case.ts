@@ -3,7 +3,7 @@ import { IEncrypter, IHasher } from "@application/protocols";
 import SendEmail from "@application/protocols/services/send-email";
 import IUserRepository from "@application/repositories/user-repository";
 import { User } from "@domain/entities";
-import SignIn from "@domain/use-cases/sign-in";
+import { SignIn } from "@domain/use-cases/sign-in";
 import { randomUUID } from "crypto";
 
 export interface CheckEmailAvailability {

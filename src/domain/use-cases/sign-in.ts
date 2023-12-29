@@ -1,10 +1,10 @@
-namespace SignIn {
-  type Params = {
+export namespace SignIn {
+  export type Params = {
     email: string;
     password: string;
   };
 
-  type Result = {
+  export type Result = {
     accessToken: string;
   };
 
@@ -12,5 +12,3 @@ namespace SignIn {
     execute(data: Params): Promise<Result>;
   }
 }
-
-export default SignIn;

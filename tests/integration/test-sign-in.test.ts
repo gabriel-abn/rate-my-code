@@ -1,8 +1,12 @@
+import prisma from "@infra/persistence/database/prisma";
+import RedisDB from "@infra/persistence/database/redis-db";
 import app from "@main/server";
 
 import request from "supertest";
 
 describe("Sign In", () => {
+  const redis = RedisDB.getInstance();
+
   let fake_request: {
     email: string;
     password: string;
@@ -15,12 +19,25 @@ describe("Sign In", () => {
     };
   });
 
-  it("should receive 400 if email already exists", async () => {
-    fake_request.email = "fake@gmail.com";
+  afterAll(async () => {
+    await redis.del("gabriel@gmail.com");
+    await prisma.user.deleteMany({});
+  });
 
-    const response = await request(app)
-      .post("/api/sign-in")
-      .send({ ...fake_request });
+  it("should receive 400 if email already exists", async () => {
+    await prisma.user.create({
+      data: {
+        email: "fake@gmail.com",
+        password: "Fake123!",
+      },
+    });
+
+    const response = await request(app).post("/api/sign-in").send({
+      email: "fake@gmail.com",
+      password: "Fake123!",
+    });
+
+    console.log(response.body);
 
     expect(response.status).toBe(400);
     expect(response.body).toHaveProperty("message", "Email already in use.");
@@ -91,7 +108,10 @@ describe("Sign In", () => {
   });
 
   it("should receive 200 if email and password are valid", async () => {
-    const response = await request(app).post("/api/sign-in").send(fake_request);
+    const response = await request(app).post("/api/sign-in").send({
+      email: "gabriel.nascimento@gmail.com",
+      password: "Gabriel123!",
+    });
 
     expect(response.body).toHaveProperty("accessToken");
     expect(response.status).toBe(200);

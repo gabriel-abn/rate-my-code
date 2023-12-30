@@ -1,5 +1,6 @@
 import prisma from "@infra/persistence/database/prisma";
 import RedisDB from "@infra/persistence/database/redis-db";
+import emailService from "@infra/services/email-service";
 import app from "@main/server";
 
 import request from "supertest";
@@ -105,13 +106,32 @@ describe("Sign In", () => {
     });
   });
 
-  it("should receive 200 if email and password are valid", async () => {
+  describe("Sending valid email and password", async () => {
+    const email = emailService;
+
     const response = await request(app).post("/api/sign-in").send({
       email: "gabriel.nascimento@gmail.com",
       password: "Gabriel123!",
     });
 
-    expect(response.body).toHaveProperty("accessToken");
-    expect(response.status).toBe(200);
+    it("should receive 200 and access token", async () => {
+      expect(response.body).toHaveProperty("accessToken");
+      expect(response.status).toBe(200);
+    });
+
+    it("should receive email with confirmation token", () => {
+      expect(email.emails.length).toBeGreaterThanOrEqual(1);
+      expect(() =>
+        email.emails.find(
+          (email) => email.to === "gabriel.nascimento@gmail.com" && "token" in email.data,
+        ),
+      ).toBeTruthy();
+    });
+
+    it("should save token in redis", async () => {
+      const token = await redis.get("gabriel.nascimento@gmail.com");
+
+      expect(token).toBeTruthy();
+    });
   });
 });

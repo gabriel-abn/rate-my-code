@@ -1,6 +1,6 @@
 import ApplicationError from "@application/common/application-error";
-import SignInUseCase from "@application/use-cases/sign-in-use-case";
-import SignIn from "@domain/use-cases/sign-in";
+import { SignInUseCase } from "@application/use-cases";
+import { SignIn } from "@domain/use-cases";
 import UserRepositorySpy from "tests/mocks/repositories/user-repository-spy";
 import { Mock } from "vitest";
 
@@ -58,6 +58,18 @@ describe("Sign In Use Case", () => {
       async () =>
         await sut.execute({
           email: "fake@gmail.com",
+          password: "Fake123!",
+        }),
+    ).rejects.toThrowError(ApplicationError);
+  });
+
+  it("should throw if email not sent", () => {
+    sendEmailConfirmation.send.mockResolvedValueOnce(false);
+
+    expect(
+      async () =>
+        await sut.execute({
+          email: "any_email@gmail.com",
           password: "Fake123!",
         }),
     ).rejects.toThrowError(ApplicationError);

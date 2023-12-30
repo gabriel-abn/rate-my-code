@@ -37,8 +37,6 @@ describe("Sign In", () => {
       password: "Fake123!",
     });
 
-    console.log(response.body);
-
     expect(response.status).toBe(400);
     expect(response.body).toHaveProperty("message", "Email already in use.");
   });

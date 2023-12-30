@@ -3,7 +3,7 @@ import { IEncrypter, IHasher } from "@application/protocols";
 import SendEmail from "@application/protocols/services/send-email";
 import IUserRepository from "@application/repositories/user-repository";
 import { User } from "@domain/entities";
-import { SignIn } from "@domain/use-cases/sign-in";
+import { SignIn } from "@domain/use-cases";
 import { randomUUID } from "crypto";
 
 export interface CheckEmailAvailability {
@@ -14,7 +14,7 @@ export interface SaveVerificationToken {
   saveToken(email: string, token: string): Promise<boolean>;
 }
 
-class SignInUseCase implements SignIn.UseCase {
+export class SignInUseCase implements SignIn.UseCase {
   constructor(
     private readonly userRepo: IUserRepository & CheckEmailAvailability,
     private readonly hasher: IHasher,
@@ -65,5 +65,3 @@ class SignInUseCase implements SignIn.UseCase {
     };
   }
 }
-
-export default SignInUseCase;

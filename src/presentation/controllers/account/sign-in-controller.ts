@@ -1,4 +1,4 @@
-import SignIn from "@domain/use-cases/sign-in";
+import { SignIn } from "@domain/use-cases";
 import Controller from "@presentation/common/controller";
 import { z } from "zod";
 
@@ -16,7 +16,7 @@ const signInSchema = z.object({
 
 type SignInRequest = z.infer<typeof signInSchema>;
 
-class SignInController extends Controller<SignInRequest> {
+export class SignInController extends Controller<SignInRequest> {
   constructor(private readonly useCase: SignIn.UseCase) {
     super();
     this.schema = signInSchema;
@@ -31,5 +31,3 @@ class SignInController extends Controller<SignInRequest> {
     return response;
   }
 }
-
-export default SignInController;

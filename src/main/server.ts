@@ -1,4 +1,4 @@
-import SignInUseCase from "@application/use-cases/sign-in-use-case";
+import { SignInUseCase } from "@application/use-cases/account";
 
 import Hasher from "@infra/cryptography/hasher";
 import JWTAdapter from "@infra/jwt/jwt-crypter";
@@ -6,7 +6,7 @@ import tokenRepository from "@infra/persistence/repositories/token-repository";
 import userRepository from "@infra/persistence/repositories/user-repository";
 import emailService from "@infra/services/email-service";
 
-import SignInController from "@presentation/controllers/sign-in-controller";
+import { SignInController } from "@presentation/controllers";
 
 import express, { Request, Response, json } from "express";
 import loadEnvVars from "./config/env";

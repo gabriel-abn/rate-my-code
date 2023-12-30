@@ -1,7 +1,7 @@
-import express, { Request, Response, json } from "express";
-import { adaptRoute } from "./adapters/express-route-adapter";
 import loadEnvVars from "./config/env";
-import signInFactory from "./factories/account/sign-in-factory";
+import { accountRoutes } from "./routes";
+
+import express, { Request, Response, json } from "express";
 
 loadEnvVars();
 
@@ -19,6 +19,6 @@ app.get("/", (req: Request, res: Response) => {
   res.send("Hello, World!");
 });
 
-app.post("/api/sign-in", adaptRoute(signInFactory.create()));
+app.use("/api", [accountRoutes]);
 
 export default app;

@@ -1,15 +1,7 @@
-import { SignInUseCase } from "@application/use-cases/account";
-
-import Hasher from "@infra/cryptography/hasher";
-import JWTAdapter from "@infra/jwt/jwt-crypter";
-import tokenRepository from "@infra/persistence/repositories/token-repository";
-import userRepository from "@infra/persistence/repositories/user-repository";
-import emailService from "@infra/services/email-service";
-
-import { SignInController } from "@presentation/controllers";
-
 import express, { Request, Response, json } from "express";
+import { adaptRoute } from "./adapters/express-route-adapter";
 import loadEnvVars from "./config/env";
+import signInFactory from "./factories/account/sign-in-factory";
 
 loadEnvVars();
 
@@ -27,22 +19,6 @@ app.get("/", (req: Request, res: Response) => {
   res.send("Hello, World!");
 });
 
-app.post("/api/sign-in", async (req: Request, res: Response) => {
-  const body = req.body;
-
-  const useCase = new SignInUseCase(
-    userRepository,
-    new Hasher(),
-    new JWTAdapter(),
-    tokenRepository,
-    emailService,
-  );
-
-  const controller = new SignInController(useCase);
-
-  const response = await controller.handle({ body });
-
-  res.status(response.statusCode).send({ ...response.body });
-});
+app.post("/api/sign-in", adaptRoute(signInFactory.create()));
 
 export default app;

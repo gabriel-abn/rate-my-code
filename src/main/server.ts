@@ -16,7 +16,9 @@ app.listen(PORT, () => {
 });
 
 app.get("/", (req: Request, res: Response) => {
-  res.send("Hello, World!");
+  res.status(200).send({
+    message: "Hello world! Server is running.",
+  });
 });
 
 app.use("/api", [accountRoutes]);

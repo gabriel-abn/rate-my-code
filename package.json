@@ -13,7 +13,7 @@
     "*.{js,jsx,ts,tsx}": [
       "eslint --fix",
       "prettier --write",
-      "vitest related --run"
+      "vitest related -c ./tests/config/vitest.integration.config.ts --run"
     ]
   },
   "keywords": [],

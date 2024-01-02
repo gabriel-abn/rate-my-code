@@ -6,6 +6,7 @@ export default mergeConfig(baseConfig, {
     include: ["**/*.test.ts"],
     env: {
       NODE_ENV: "development",
+      PORT: 0,
     },
   },
 });

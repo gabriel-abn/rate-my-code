@@ -1,5 +1,5 @@
 import { Redis } from "ioredis";
-import { KeyValueDatabase } from "../common";
+import { DatabaseError, KeyValueDatabase } from "../common";
 
 export default class RedisDB implements KeyValueDatabase {
   private static instance: RedisDB;
@@ -13,21 +13,41 @@ export default class RedisDB implements KeyValueDatabase {
   }
 
   async set(key: string, value: string): Promise<void> {
-    await this.client.set(key, value);
+    try {
+      await this.client.set(key, value);
+    } catch (err) {
+      throw new DatabaseError(err);
+    }
   }
 
   async get(key: string): Promise<string> {
-    return await this.client.get(key);
+    try {
+      return await this.client.get(key);
+    } catch (err) {
+      throw new DatabaseError(err);
+    }
   }
 
-  async del(key: string): Promise<void> {
-    await this.client.del(key);
+  async del(key?: string): Promise<void> {
+    try {
+      await this.client.del(key);
+    } catch (err) {
+      throw new DatabaseError(err);
+    }
   }
 
   async exists(key: string): Promise<boolean> {
-    const exists = await this.client.exists(key);
+    try {
+      const exists = await this.client.exists(key);
 
-    return exists <= 1;
+      if (exists <= 1) {
+        return true;
+      }
+
+      return false;
+    } catch (err) {
+      throw new DatabaseError(err);
+    }
   }
 
   public static getInstance(): RedisDB {

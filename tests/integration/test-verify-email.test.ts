@@ -80,7 +80,13 @@ describe("Verify Email", () => {
       })
       .auth(auth, { type: "bearer" });
 
+    const { emailVerified } = await prisma.user.findUnique({
+      select: { emailVerified: true },
+      where: { email: fakeRequest.email },
+    });
+
     expect(response.body.message).toBe("Email verified successfully.");
     expect(response.status).toBe(200);
+    expect(emailVerified).toBe(true);
   });
 });

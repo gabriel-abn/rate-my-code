@@ -3,7 +3,7 @@ import Controller from "@presentation/common/controller";
 import { z } from "zod";
 
 const signInSchema = z.object({
-  email: z.string().email(),
+  email: z.string().email("Invalid email."),
   password: z
     .string()
     .min(6, "Password must be at least 6 characters.")

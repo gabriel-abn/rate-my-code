@@ -11,7 +11,7 @@ export interface CheckEmailAvailability {
 }
 
 export interface SaveVerificationToken {
-  saveToken(email: string, token: string): Promise<boolean>;
+  saveToken(email: string, token: string): Promise<void>;
 }
 
 export class SignInUseCase implements SignIn.UseCase {

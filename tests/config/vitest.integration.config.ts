@@ -4,9 +4,5 @@ import baseConfig from "../../vitest.config";
 export default mergeConfig(baseConfig, {
   test: {
     include: ["**/*.test.ts"],
-    env: {
-      NODE_ENV: "development",
-      PORT: 0,
-    },
   },
 });

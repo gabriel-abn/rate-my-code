@@ -6,13 +6,15 @@ import express, { Request, Response, json } from "express";
 loadEnvVars();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT ? Number(process.env.PORT) : 3000;
 
 app.use(json());
 
 app.listen(PORT, () => {
-  console.log(`Environment: ${process.env.NODE_ENV}\n`);
-  console.log(`Server is running on port ${PORT}`);
+  if (process.env.NODE_ENV !== "test") {
+    console.log(`Environment: ${process.env.NODE_ENV}\n`);
+    console.log(`Server is running on port ${PORT}`);
+  }
 });
 
 app.get("/", (req: Request, res: Response) => {

@@ -3,6 +3,10 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
+    env: {
+      NODE_ENV: "test",
+      PORT: "0",
+    },
     passWithNoTests: true,
     globals: true,
     globalSetup: "./src/main/config/env.ts",

@@ -1,17 +1,27 @@
-import { SaveVerificationToken } from "@application/use-cases/sign-in-use-case";
+import { CheckToken, SaveVerificationToken } from "@application/use-cases";
 import { KeyValueDatabase } from "../common";
 import RedisDB from "../database/redis-db";
 
-class TokenRepository implements SaveVerificationToken {
+class TokenRepository implements SaveVerificationToken, CheckToken {
   constructor(private kvDatabase: KeyValueDatabase) {}
 
-  async saveToken(email: string, token: string): Promise<boolean> {
-    try {
-      await this.kvDatabase.set(email, token);
-      return true;
-    } catch (err) {
-      throw new Error(err);
+  async saveToken(email: string, token: string): Promise<void> {
+    await this.kvDatabase.set(email, token);
+  }
+
+  async checkToken(email: string, token: string): Promise<boolean> {
+    const savedToken = await this.kvDatabase.get(email);
+
+    if (savedToken !== token) {
+      return false;
     }
+
+    await this.kvDatabase.del(email);
+
+    return true;
+  }
+  async checkEmail(email: string): Promise<boolean> {
+    return await this.kvDatabase.exists(email);
   }
 }
 

@@ -1,12 +1,12 @@
 import IUserRepository from "@application/repositories/user-repository";
-import { CheckEmailAvailability } from "@application/use-cases/sign-in-use-case";
+import { CheckEmailAvailability, CheckUserEmail } from "@application/use-cases";
 import { User } from "@domain/entities";
 import { PrismaClient } from "@prisma/client";
 import { RelationalDatabase } from "../common";
 import postgres from "../database/postgres";
 import prisma from "../database/prisma";
 
-class UserRepository implements IUserRepository, CheckEmailAvailability {
+class UserRepository implements IUserRepository, CheckEmailAvailability, CheckUserEmail {
   constructor(
     private database: RelationalDatabase,
     private prisma: PrismaClient,
@@ -29,6 +29,36 @@ class UserRepository implements IUserRepository, CheckEmailAvailability {
     }
 
     return false;
+  }
+
+  async verifyEmail(email: string): Promise<void> {
+    await this.database.query(
+      `
+          UPDATE  "User"
+          SET     "emailVerified" = true
+          WHERE   "email" = $1;
+        `,
+      [email],
+    );
+  }
+
+  async getByEmail(email: string): Promise<User> {
+    const user = await this.database
+      .query(
+        `
+          SELECT  "id", "email", "password"
+          FROM    "User"
+          WHERE   "email" = $1;
+        `,
+        [email],
+      )
+      .then((rows) => rows[0]);
+
+    if (!user) {
+      return null;
+    }
+
+    return User.restore(user, user.id);
   }
 
   async save(user: User): Promise<string> {

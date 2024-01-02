@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "lint-staged": "lint-staged",
-    "test:unit": "vitest -c ./tests/config/vitest.unit.config.ts --coverage",
-    "test:integration": "vitest -c ./tests/config/vitest.integration.config.ts --coverage",
+    "test:ut": "vitest -c ./tests/config/vitest.unit.config.ts",
+    "test:it": "vitest -c ./tests/config/vitest.integration.config.ts",
     "test:all": "vitest --coverage"
   },
   "lint-staged": {

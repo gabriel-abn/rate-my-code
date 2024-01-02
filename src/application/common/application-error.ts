@@ -1,7 +1,7 @@
 export default class ApplicationError extends Error {
-  constructor(message: string, name?: string) {
+  constructor(message: string, name: string) {
     super();
-    this.name = "ApplicationError" || name;
+    this.name = name ? name : "APPLICATION_ERROR";
     this.message = message;
   }
 }

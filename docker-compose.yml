@@ -19,6 +19,7 @@ services:
       POSTGRES_DB: rate-my-code
     volumes:
       - app-psql-volume
+
   redis:
     image: redis:latest
     container_name: redis-rmc
@@ -27,6 +28,19 @@ services:
     volumes:
       - app-redis-volume
 
+  mongo:
+    image: mongo:latest
+    container_name: mongo-rmc
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_DATABASE: rate-my-code
+    volumes:
+      - app-mongo-volume
+
 volumes:
   app-psql-volume:
   app-redis-volume:
+  app-mongo-volume:

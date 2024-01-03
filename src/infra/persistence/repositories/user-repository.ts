@@ -16,9 +16,9 @@ class UserRepository implements IUserRepository, CheckEmailAvailability, CheckUs
     const user = await this.database
       .query(
         `
-          SELECT  "id"
-          FROM    "User"
-          WHERE   "email" = $1;
+          SELECT  id
+          FROM    "user"
+          WHERE   email = $1;
         `,
         [email],
       )
@@ -34,9 +34,9 @@ class UserRepository implements IUserRepository, CheckEmailAvailability, CheckUs
   async verifyEmail(email: string): Promise<void> {
     await this.database.query(
       `
-          UPDATE  "User"
-          SET     "emailVerified" = true
-          WHERE   "email" = $1;
+          UPDATE  "user"
+          SET     email_verified = true
+          WHERE   email = $1;
         `,
       [email],
     );
@@ -46,9 +46,9 @@ class UserRepository implements IUserRepository, CheckEmailAvailability, CheckUs
     const user = await this.database
       .query(
         `
-          SELECT  "id", "email", "password", "emailVerified"
-          FROM    "User"
-          WHERE   "email" = $1;
+          SELECT  id, email, password, email_verified AS "emailVerified"
+          FROM    "user"
+          WHERE   email = $1;
         `,
         [email],
       )
@@ -87,7 +87,7 @@ class UserRepository implements IUserRepository, CheckEmailAvailability, CheckUs
     return user;
   }
 
-  async update(id: string, user: User): Promise<User> {
+  async update(id: string, user: User): Promise<boolean> {
     const userProps = await this.prisma.user.update({
       where: {
         id,
@@ -96,9 +96,16 @@ class UserRepository implements IUserRepository, CheckEmailAvailability, CheckUs
         email: user.email,
         password: user.password,
       },
+      select: {
+        id: true,
+      },
     });
 
-    return User.restore(userProps, id);
+    if (!userProps) {
+      return false;
+    }
+
+    return true;
   }
 }
 

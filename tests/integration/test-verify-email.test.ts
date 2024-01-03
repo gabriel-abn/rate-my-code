@@ -27,10 +27,10 @@ describe("Verify Email", () => {
     token = await redis.get(fakeRequest.email);
   });
 
-  afterAll(async () => {
-    await redis.del();
-    await prisma.user.deleteMany({});
-  });
+  // afterAll(async () => {
+  //   await redis.del();
+  //   await prisma.user.deleteMany({});
+  // });
 
   it("should receive a 400 if email not found", async () => {
     const response = await request(app)

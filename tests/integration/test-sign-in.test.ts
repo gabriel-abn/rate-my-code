@@ -1,4 +1,3 @@
-import prisma from "@infra/persistence/database/prisma";
 import RedisDB from "@infra/persistence/database/redis-db";
 import emailService from "@infra/services/email-service";
 
@@ -24,10 +23,10 @@ describe("Sign In", () => {
     };
   });
 
-  afterAll(async () => {
-    await redis.del(fakeRequest.email);
-    await prisma.user.deleteMany({});
-  });
+  // afterAll(async () => {
+  //   await redis.del(fakeRequest.email);
+  //   await prisma.user.deleteMany({});
+  // });
 
   it("should receive 400 if email already exists", async () => {
     const { email, password } = fakeRequest;

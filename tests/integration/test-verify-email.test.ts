@@ -58,6 +58,35 @@ describe("Verify Email", () => {
     expect(response.body.error).toBe("INVALID_TOKEN");
   });
 
+  it("should receive a 400 if email is already verified", async () => {
+    const verifiedEmail = faker.internet.email();
+
+    await request(app)
+      .post("/api/sign-in")
+      .send({ email: verifiedEmail, password: fakeRequest.password });
+
+    const token = await redis.get(verifiedEmail);
+
+    await request(app)
+      .post("/api/verify-email")
+      .send({
+        email: verifiedEmail,
+        token,
+      })
+      .auth(token, { type: "bearer" });
+
+    const response = await request(app)
+      .post("/api/verify-email")
+      .send({
+        email: verifiedEmail,
+        token,
+      })
+      .auth(token, { type: "bearer" });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toBe("EMAIL_ALREADY_VERIFIED");
+  });
+
   it("should receive a 400 if token is expired", async () => {
     const response = await request(app)
       .post("/api/verify-email")

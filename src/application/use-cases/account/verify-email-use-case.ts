@@ -1,9 +1,8 @@
 import ApplicationError from "@application/common/application-error";
-import { User } from "@domain/entities";
+import IUserRepository from "@application/repositories/user-repository";
 import { VerifyEmail } from "@domain/use-cases";
 
 export interface CheckUserEmail {
-  getByEmail(email: string): Promise<User>;
   verifyEmail(email: string): Promise<void>;
 }
 
@@ -14,15 +13,20 @@ export interface CheckToken {
 
 export class VerifyEmailUseCase implements VerifyEmail.UseCase {
   constructor(
-    private userRepo: CheckUserEmail,
+    private userRepo: IUserRepository,
+    private checkUser: CheckUserEmail,
     private tokenRepo: CheckToken,
   ) {}
 
   async execute(params: VerifyEmail.Params): Promise<VerifyEmail.Result> {
-    const user = await this.userRepo.getByEmail(params.email);
+    const [user, isVerified] = await this.userRepo.getByEmail(params.email);
 
     if (!user) {
       throw new ApplicationError("User not found.", "EMAIL_NOT_FOUND");
+    }
+
+    if (isVerified) {
+      throw new ApplicationError("Email already verified.", "EMAIL_ALREADY_VERIFIED");
     }
 
     if (!(await this.tokenRepo.checkEmail(params.email))) {
@@ -33,7 +37,7 @@ export class VerifyEmailUseCase implements VerifyEmail.UseCase {
       throw new ApplicationError("Invalid token.", "INVALID_TOKEN");
     }
 
-    await this.userRepo.verifyEmail(params.email);
+    await this.checkUser.verifyEmail(params.email);
 
     return {
       isVerified: true,

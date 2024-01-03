@@ -6,9 +6,7 @@ export namespace UpdateProfile {
     avatar?: string;
   };
 
-  export type Result = {
-    updated: boolean;
-  };
+  export type Result = boolean;
 
   export interface UseCase {
     execute(params: Params): Promise<Result>;

@@ -10,7 +10,12 @@ class VerifyEmailFactory implements Factory {
   controller: VerifyEmailController;
 
   create(): VerifyEmailController {
-    this.useCase = new VerifyEmailUseCase(userRepository, tokenRepository);
+    this.useCase = new VerifyEmailUseCase(
+      userRepository,
+      userRepository,
+      tokenRepository,
+    );
+
     this.controller = new VerifyEmailController(this.useCase);
 
     return this.controller;

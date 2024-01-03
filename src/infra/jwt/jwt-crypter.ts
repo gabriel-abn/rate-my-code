@@ -1,11 +1,19 @@
 import { IDecrypter, IEncrypter } from "@application/protocols";
 
-export default class JWTAdapter implements IEncrypter, IDecrypter {
+import { decode, sign } from "jsonwebtoken";
+
+class JWTAdapter implements IEncrypter, IDecrypter {
+  constructor(private readonly secret: string) {
+    this.secret = secret;
+  }
+
   async encrypt(data: any): Promise<string> {
-    return "any_token: " + data;
+    return sign(data, this.secret);
   }
 
   async decrypt(token: string): Promise<any> {
-    return "any_data: " + token;
+    return decode(token);
   }
 }
+
+export default new JWTAdapter(process.env.SECRET_KEY);

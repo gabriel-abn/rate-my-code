@@ -3,7 +3,7 @@ import { SignInUseCase } from "@application/use-cases";
 import { SignIn } from "@domain/use-cases";
 
 import Hasher from "@infra/cryptography/hasher";
-import JWTAdapter from "@infra/jwt/jwt-crypter";
+import jwtAdapter from "@infra/jwt/jwt-crypter";
 import tokenRepository from "@infra/persistence/repositories/token-repository";
 import userRepository from "@infra/persistence/repositories/user-repository";
 import emailService from "@infra/services/email-service";
@@ -21,7 +21,7 @@ class SignInFactory implements Factory {
     this.useCase = new SignInUseCase(
       userRepository,
       new Hasher(),
-      new JWTAdapter(),
+      jwtAdapter,
       tokenRepository,
       emailService,
     );

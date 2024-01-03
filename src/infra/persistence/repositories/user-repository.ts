@@ -42,11 +42,11 @@ class UserRepository implements IUserRepository, CheckEmailAvailability, CheckUs
     );
   }
 
-  async getByEmail(email: string): Promise<User> {
+  async getByEmail(email: string): Promise<[User, boolean]> {
     const user = await this.database
       .query(
         `
-          SELECT  "id", "email", "password"
+          SELECT  "id", "email", "password", "emailVerified"
           FROM    "User"
           WHERE   "email" = $1;
         `,
@@ -55,10 +55,10 @@ class UserRepository implements IUserRepository, CheckEmailAvailability, CheckUs
       .then((rows) => rows[0]);
 
     if (!user) {
-      return null;
+      return [null, false];
     }
 
-    return User.restore(user, user.id);
+    return [User.restore(user, user.id), user.emailVerified];
   }
 
   async save(user: User): Promise<string> {

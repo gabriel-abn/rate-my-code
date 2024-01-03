@@ -2,13 +2,12 @@ import app from "@main/server";
 
 import { faker } from "@faker-js/faker";
 import RedisDB from "@infra/persistence/database/redis-db";
-import RandExp from "randexp";
 import request from "supertest";
 
 describe("Login", () => {
   const fakeRequest = {
     email: faker.internet.email(),
-    password: new RandExp(/[[a-z]{1,4}[A-Z]{1,4}[0-9]{1,4}[!@#$%^&*]{1,4}]/).gen(),
+    password: "Gabriel1234!@#$",
   };
 
   const redis = RedisDB.getInstance();

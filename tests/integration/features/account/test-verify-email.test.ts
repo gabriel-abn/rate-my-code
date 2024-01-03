@@ -4,7 +4,6 @@ import RedisDB from "@infra/persistence/database/redis-db";
 import app from "@main/server";
 
 import { faker } from "@faker-js/faker";
-import RandExp from "randexp";
 import request from "supertest";
 
 describe("Verify Email", () => {
@@ -15,7 +14,7 @@ describe("Verify Email", () => {
 
   const fakeRequest = {
     email: faker.internet.email(),
-    password: new RandExp(/[[a-z]{1,4}[A-Z]{1,4}[0-9]{1,4}[!@#$%^&*]{1,4}]/).gen(),
+    password: "Gabriel1234!@#$",
   };
 
   beforeAll(async () => {

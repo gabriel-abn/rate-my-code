@@ -5,4 +5,4 @@ coverage
 
 **/env
 
-prisma/migrations
+prisma/**/migrations/**/

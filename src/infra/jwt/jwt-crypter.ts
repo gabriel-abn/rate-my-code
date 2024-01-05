@@ -7,11 +7,11 @@ class JWTAdapter implements IEncrypter, IDecrypter {
     this.secret = secret;
   }
 
-  async encrypt(data: any): Promise<string> {
+  encrypt(data: any): string {
     return sign(data, this.secret);
   }
 
-  async decrypt(token: string): Promise<any> {
+  decrypt(token: string): any {
     return decode(token);
   }
 }

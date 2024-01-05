@@ -1,7 +1,7 @@
 export interface IEncrypter {
-  encrypt(data: any): Promise<string>;
+  encrypt(data: any): string;
 }
 
 export interface IDecrypter {
-  decrypt(token: string): Promise<any>;
+  decrypt(token: string): any;
 }

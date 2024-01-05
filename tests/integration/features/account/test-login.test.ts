@@ -1,24 +1,26 @@
 import app from "@main/server";
 
 import { faker } from "@faker-js/faker";
-import RedisDB from "@infra/persistence/database/redis-db";
+import redisDb from "@infra/persistence/database/redis-db";
 import request from "supertest";
 
 describe("Login", () => {
+  let auth: string;
+
   const fakeRequest = {
     email: faker.internet.email(),
     password: "Gabriel1234!@#$",
   };
 
-  const redis = RedisDB.getInstance();
-
   beforeAll(async () => {
     const { email, password } = fakeRequest;
 
-    await request(app).post("/api/sign-in").send({
+    const signed = await request(app).post("/api/sign-in").send({
       email,
       password,
     });
+
+    auth = signed.body.accessToken;
   });
 
   // afterAll(async () => {
@@ -97,12 +99,15 @@ describe("Login", () => {
   it("should return 200 and access token if email and password is correct", async () => {
     const { email, password } = fakeRequest;
 
-    const token = await redis.get(email);
+    const token = await redisDb.get(email);
 
-    await request(app).post("/api/verify-email").send({
-      email,
-      token,
-    });
+    await request(app)
+      .post("/api/verify-email")
+      .send({
+        email,
+        token,
+      })
+      .auth(auth, { type: "bearer" });
 
     const response = await request(app).post("/api/login").send({
       email,

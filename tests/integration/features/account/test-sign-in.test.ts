@@ -1,4 +1,3 @@
-import RedisDB from "@infra/persistence/database/redis-db";
 import emailService from "@infra/services/email-service";
 
 import app from "@main/server";
@@ -6,11 +5,10 @@ import app from "@main/server";
 import request from "supertest";
 
 import { faker } from "@faker-js/faker";
+import redisDb from "@infra/persistence/database/redis-db";
 import RandExp from "randexp";
 
 describe("Sign In", () => {
-  const redis = RedisDB.getInstance();
-
   let fakeRequest: {
     email: string;
     password: string;
@@ -126,7 +124,7 @@ describe("Sign In", () => {
     });
 
     it("should save token in redis", async () => {
-      const token = await redis.get(validRequest.email);
+      const token = await redisDb.get(validRequest.email);
       expect(token).toBeDefined();
     });
   });

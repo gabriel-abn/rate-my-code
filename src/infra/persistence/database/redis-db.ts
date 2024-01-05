@@ -1,7 +1,7 @@
 import { Redis } from "ioredis";
 import { DatabaseError, KeyValueDatabase } from "../common";
 
-export default class RedisDB implements KeyValueDatabase {
+class RedisDB implements KeyValueDatabase {
   private static instance: RedisDB;
   private client: Redis;
 
@@ -58,3 +58,5 @@ export default class RedisDB implements KeyValueDatabase {
     return RedisDB.instance;
   }
 }
+
+export default RedisDB.getInstance();

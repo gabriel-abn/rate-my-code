@@ -1,6 +1,6 @@
 import { CheckToken, SaveVerificationToken } from "@application/use-cases";
 import { KeyValueDatabase } from "../common";
-import RedisDB from "../database/redis-db";
+import redisDb from "../database/redis-db";
 
 class TokenRepository implements SaveVerificationToken, CheckToken {
   constructor(private kvDatabase: KeyValueDatabase) {}
@@ -25,4 +25,4 @@ class TokenRepository implements SaveVerificationToken, CheckToken {
   }
 }
 
-export default new TokenRepository(RedisDB.getInstance());
+export default new TokenRepository(redisDb);

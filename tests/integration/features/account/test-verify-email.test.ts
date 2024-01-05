@@ -1,16 +1,14 @@
 import prisma from "@infra/persistence/database/prisma";
-import RedisDB from "@infra/persistence/database/redis-db";
 
 import app from "@main/server";
 
 import { faker } from "@faker-js/faker";
+import redisDb from "@infra/persistence/database/redis-db";
 import request from "supertest";
 
 describe("Verify Email", () => {
   let auth: string;
   let token: string;
-
-  const redis = RedisDB.getInstance();
 
   const fakeRequest = {
     email: faker.internet.email(),
@@ -22,8 +20,8 @@ describe("Verify Email", () => {
       .post("/api/sign-in")
       .send({ ...fakeRequest });
 
-    auth = response.body.token;
-    token = await redis.get(fakeRequest.email);
+    auth = response.body.accessToken;
+    token = await redisDb.get(fakeRequest.email);
   });
 
   // afterAll(async () => {
@@ -40,8 +38,8 @@ describe("Verify Email", () => {
       })
       .auth(auth, { type: "bearer" });
 
-    expect(response.status).toBe(400);
     expect(response.body.error).toBe("EMAIL_NOT_FOUND");
+    expect(response.status).toBe(400);
   });
 
   it("should receive a 400 if token is invalid", async () => {
@@ -53,8 +51,8 @@ describe("Verify Email", () => {
       })
       .auth(auth, { type: "bearer" });
 
-    expect(response.status).toBe(400);
     expect(response.body.error).toBe("INVALID_TOKEN");
+    expect(response.status).toBe(400);
   });
 
   it("should receive a 400 if email is already verified", async () => {
@@ -64,7 +62,7 @@ describe("Verify Email", () => {
       .post("/api/sign-in")
       .send({ email: verifiedEmail, password: fakeRequest.password });
 
-    const token = await redis.get(verifiedEmail);
+    const token = await redisDb.get(verifiedEmail);
 
     await request(app)
       .post("/api/verify-email")
@@ -72,7 +70,7 @@ describe("Verify Email", () => {
         email: verifiedEmail,
         token,
       })
-      .auth(token, { type: "bearer" });
+      .auth(auth, { type: "bearer" });
 
     const response = await request(app)
       .post("/api/verify-email")
@@ -80,10 +78,10 @@ describe("Verify Email", () => {
         email: verifiedEmail,
         token,
       })
-      .auth(token, { type: "bearer" });
+      .auth(auth, { type: "bearer" });
 
-    expect(response.status).toBe(400);
     expect(response.body.error).toBe("EMAIL_ALREADY_VERIFIED");
+    expect(response.status).toBe(400);
   });
 
   it("should receive a 400 if token is expired", async () => {
@@ -95,8 +93,8 @@ describe("Verify Email", () => {
       })
       .auth(auth, { type: "bearer" });
 
-    expect(response.status).toBe(400);
     expect(response.body.error).toBe("INVALID_TOKEN");
+    expect(response.status).toBe(400);
   });
 
   it("should receive a 200 when the email is verified", async () => {

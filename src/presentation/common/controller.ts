@@ -1,13 +1,15 @@
 import ApplicationError from "@application/common/application-error";
-import { HttpRequest, HttpResponse, badRequest, serverError, success } from "./http";
 
 import { Schema } from "zod";
 
+import { HttpRequest, HttpResponse, badRequest, serverError, success } from "./http";
+
 export default abstract class Controller<T = any> {
   schema: Schema;
-  abstract run(request: T): Promise<any>;
 
-  async handle(request: HttpRequest): Promise<HttpResponse> {
+  abstract run(request: HttpRequest<T>): Promise<any>;
+
+  async handle(request: HttpRequest<any>): Promise<HttpResponse> {
     try {
       const body = this.schema.safeParse(request.body);
 
@@ -20,7 +22,7 @@ export default abstract class Controller<T = any> {
         });
       }
 
-      const response = await this.run(body.data);
+      const response = await this.run(request);
 
       return success(response);
     } catch (err) {

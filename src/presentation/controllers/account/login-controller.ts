@@ -1,5 +1,6 @@
 import { Login } from "@domain/use-cases";
 import Controller from "@presentation/common/controller";
+import { HttpRequest } from "@presentation/common/http";
 import { z } from "zod";
 
 export const schema = z.object({
@@ -21,8 +22,8 @@ export class LoginController extends Controller<LoginRequest> {
     this.schema = schema;
   }
 
-  async run(request: LoginRequest): Promise<Login.Result> {
-    const { email, password } = request;
+  async run(request: HttpRequest<LoginRequest>): Promise<Login.Result> {
+    const { email, password } = request.body;
 
     return await this.useCase.execute({ email, password });
   }

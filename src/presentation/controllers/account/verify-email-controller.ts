@@ -1,5 +1,6 @@
 import { VerifyEmail } from "@domain/use-cases";
 import Controller from "@presentation/common/controller";
+import { HttpRequest } from "@presentation/common/http";
 import { z } from "zod";
 
 const schema = z.object({
@@ -15,8 +16,8 @@ export class VerifyEmailController extends Controller<VerifyEmailRequest> {
     this.schema = schema;
   }
 
-  async run(request: VerifyEmailRequest): Promise<VerifyEmail.Result> {
-    const { email, token } = request;
+  async run(request: HttpRequest<VerifyEmailRequest>): Promise<VerifyEmail.Result> {
+    const { email, token } = request.body;
 
     return await this.useCase.execute({ email, token });
   }

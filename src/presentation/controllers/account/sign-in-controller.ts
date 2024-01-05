@@ -1,5 +1,6 @@
 import { SignIn } from "@domain/use-cases";
 import Controller from "@presentation/common/controller";
+import { HttpRequest } from "@presentation/common/http";
 import { z } from "zod";
 
 const signInSchema = z.object({
@@ -22,10 +23,12 @@ export class SignInController extends Controller<SignInRequest> {
     this.schema = signInSchema;
   }
 
-  async run(request: SignInRequest): Promise<object> {
+  async run(request: HttpRequest<SignInRequest>): Promise<object> {
+    const { email, password } = request.body;
+
     const response = await this.useCase.execute({
-      email: request.email,
-      password: request.password,
+      email: email,
+      password: password,
     });
 
     return response;

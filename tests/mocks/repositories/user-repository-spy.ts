@@ -1,5 +1,5 @@
 import IUserRepository from "@application/repositories/user-repository";
-import { CheckEmailAvailability } from "@application/use-cases/sign-in-use-case";
+import { CheckEmailAvailability } from "@application/use-cases";
 import { User } from "@domain/entities";
 
 export default class UserRepositorySpy
@@ -17,6 +17,16 @@ export default class UserRepositorySpy
         "fake",
       ),
     ];
+  }
+
+  async getByEmail(email: string): Promise<[User, boolean]> {
+    const user = this.users.find((user) => user.email === email);
+
+    if (user) {
+      return [user, true];
+    }
+
+    return [null, false];
   }
 
   async checkEmail(email: string): Promise<boolean> {
@@ -38,11 +48,12 @@ export default class UserRepositorySpy
   async getById(id: string): Promise<User> {
     return this.users.find((user) => user.id === id);
   }
-  async update(id: string, user: User): Promise<User> {
+
+  async update(id: string, user: User): Promise<boolean> {
     const index = this.users.findIndex((user) => user.id === id);
 
     this.users[index] = user;
 
-    return user;
+    return true;
   }
 }

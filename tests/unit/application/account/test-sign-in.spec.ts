@@ -122,7 +122,7 @@ describe("Sign In Use Case", () => {
     sendEmailConfirmation.send.mockResolvedValueOnce(true);
     tokenRepo.saveToken.mockResolvedValueOnce(true);
     hasher.hash.mockResolvedValueOnce("hashed-password");
-    encrypter.encrypt.mockResolvedValueOnce("fake-access-token");
+    encrypter.encrypt.mockReturnValueOnce("fake-access-token");
 
     const result = await sut.execute(fakeData);
 

@@ -58,7 +58,10 @@ export class SignInUseCase implements SignIn.UseCase {
 
     const savedUser = await this.userRepo.save(user);
 
-    const accessToken = await this.crypter.encrypt(savedUser);
+    const accessToken = this.crypter.encrypt({
+      id: savedUser,
+      email: user.email,
+    });
 
     return {
       accessToken,

@@ -1,6 +1,5 @@
 import { VerifyEmail } from "@domain/use-cases";
-import Controller from "@presentation/common/controller";
-import { HttpRequest } from "@presentation/common/http";
+import { Controller, HttpRequest } from "@presentation/common";
 import { z } from "zod";
 
 const schema = z.object({

@@ -4,7 +4,7 @@ import { Schema } from "zod";
 
 import { HttpRequest, HttpResponse, badRequest, serverError, success } from "./http";
 
-export default abstract class Controller<T = any> {
+export abstract class Controller<T = any> {
   schema: Schema;
 
   abstract run(request: HttpRequest<T>): Promise<any>;

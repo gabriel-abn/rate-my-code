@@ -1,8 +1,9 @@
 import jwtCrypter from "@infra/jwt/jwt-crypter";
+import { Permission } from "@presentation/common/auth";
 
 import { NextFunction, Request, Response } from "express";
 
-export const authMiddleware = () => {
+export const authMiddleware = (permission?: Permission) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     let accessToken: string[] | undefined;
 
@@ -19,13 +20,24 @@ export const authMiddleware = () => {
     } catch (error) {
       return res
         .status(402)
-        .json({ error: "UNAUTHORIZED", message: "No token provided." });
+        .json({ error: "UNAUTHENTICADED", message: "No token provided." });
     }
 
     try {
-      const { email, id } = jwtCrypter.decrypt(accessToken[1]);
+      const { id, role } = jwtCrypter.decrypt(accessToken[1]);
 
-      req.body = { ...req.body, email, id };
+      if (permission) {
+        if (role > permission) {
+          return res.status(403).json({
+            error: "UNAUTHORIZED",
+            message: "You don't have permission to perform this action",
+          });
+        }
+
+        next();
+      }
+
+      req.body = { ...req.body, id };
 
       next();
     } catch (error) {

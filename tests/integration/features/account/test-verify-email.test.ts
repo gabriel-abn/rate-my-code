@@ -1,21 +1,26 @@
 import prisma from "@infra/persistence/database/prisma";
+import redisDb from "@infra/persistence/database/redis-db";
 
 import app from "@main/server";
 
 import { faker } from "@faker-js/faker";
-import redisDb from "@infra/persistence/database/redis-db";
 import request from "supertest";
 
 describe("Verify Email", () => {
   let auth: string;
   let token: string;
 
-  const fakeRequest = {
-    email: faker.internet.email(),
-    password: "Gabriel1234!@#$",
+  let fakeRequest: {
+    email: string;
+    password: string;
   };
 
   beforeAll(async () => {
+    fakeRequest = {
+      email: faker.internet.email(),
+      password: "Gabriel1234!@#$",
+    };
+
     const response = await request(app)
       .post("/api/sign-in")
       .send({ ...fakeRequest });

@@ -30,10 +30,17 @@ export class SignInUseCase implements SignIn.UseCase {
       throw new ApplicationError("Email already in use.", "EMAIL_IN_USE");
     }
 
+    const hashedPassword = await this.hasher.hash(data.password);
+
+    const user = new User({
+      email: data.email,
+      password: hashedPassword,
+    });
+
     const confirmationToken = randomUUID().split("-")[0].toUpperCase();
 
     const emailSent = await this.sendEmail.send({
-      to: data.email,
+      to: user.email,
       template: "email-confirmation",
       data: {
         token: confirmationToken,
@@ -44,17 +51,7 @@ export class SignInUseCase implements SignIn.UseCase {
       throw new ApplicationError("Error sending email.", "EMAIL_SEND_ERROR");
     }
 
-    await this.saveToken.saveToken(data.email, confirmationToken);
-
-    const hashedPassword = await this.hasher.hash(data.password);
-
-    const user = new User(
-      {
-        email: data.email,
-        password: hashedPassword,
-      },
-      "fake",
-    );
+    await this.saveToken.saveToken(user.email, confirmationToken);
 
     const savedUser = await this.userRepo.save(user);
 

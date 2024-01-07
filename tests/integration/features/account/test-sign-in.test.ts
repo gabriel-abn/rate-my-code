@@ -1,23 +1,24 @@
+import redisDb from "@infra/persistence/database/redis-db";
 import emailService from "@infra/services/email-service";
 
 import app from "@main/server";
 
-import request from "supertest";
-
 import { faker } from "@faker-js/faker";
-import redisDb from "@infra/persistence/database/redis-db";
 import RandExp from "randexp";
+import request from "supertest";
 
 describe("Sign In", () => {
   let fakeRequest: {
     email: string;
     password: string;
+    role: string;
   };
 
   beforeEach(() => {
     fakeRequest = {
       email: faker.internet.email(),
       password: new RandExp(/[[a-z]{1,4}[A-Z]{1,4}[0-9]{1,4}[!@#$%^&*]{1,4}]/).gen(),
+      role: faker.helpers.arrayElement(["DEVELOPER", "INSTRUCTOR"]),
     };
   });
 
@@ -27,16 +28,18 @@ describe("Sign In", () => {
   // });
 
   it("should receive 400 if email already exists", async () => {
-    const { email, password } = fakeRequest;
+    const { email, password, role } = fakeRequest;
 
     await request(app).post("/api/sign-in").send({
       email,
       password,
+      role,
     });
 
     const response = await request(app).post("/api/sign-in").send({
       email,
       password,
+      role,
     });
 
     expect(response.status).toBe(400);
@@ -54,9 +57,12 @@ describe("Sign In", () => {
 
   describe("Password rules", () => {
     it("password is too short", async () => {
+      const { role } = fakeRequest;
+
       const response = await request(app).post("/api/sign-in").send({
         email: "johndoe@gmail.com",
         password: "123",
+        role,
       });
 
       expect(response.status).toBe(400);
@@ -64,11 +70,14 @@ describe("Sign In", () => {
     });
 
     it("password is too long", async () => {
+      const { role } = fakeRequest;
+
       const response = await request(app)
         .post("/api/sign-in")
         .send({
           email: "jonhdoe@gmail.com",
           password: new RandExp(/[a-zA-Z0-9!@#$%^&*]{65}/).gen(),
+          role,
         });
 
       expect(response.status).toBe(400);
@@ -76,9 +85,12 @@ describe("Sign In", () => {
     });
 
     it("password doesnt have numbers", async () => {
+      const { role } = fakeRequest;
+
       const response = await request(app).post("/api/sign-in").send({
         email: "johndoe@gmail.com",
         password: "Password",
+        role,
       });
 
       expect(response.status).toBe(400);
@@ -86,9 +98,12 @@ describe("Sign In", () => {
     });
 
     it("password doesnt have special caracters", async () => {
+      const { role } = fakeRequest;
+
       const response = await request(app).post("/api/sign-in").send({
         email: "johndoe@gmail.com",
         password: "Password123",
+        role,
       });
 
       expect(response.status).toBe(400);
@@ -104,6 +119,7 @@ describe("Sign In", () => {
     const validRequest = {
       email: faker.internet.email(),
       password: new RandExp(/[[a-z]{1,4}[A-Z]{1,4}[0-9]{1,4}[!@#$%^&*]{1,4}]/).gen(),
+      role: faker.helpers.arrayElement(["DEVELOPER", "INSTRUCTOR"]),
     };
 
     const response = await request(app)

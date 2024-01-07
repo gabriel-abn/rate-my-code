@@ -19,10 +19,13 @@ describe("Update profile", () => {
       token: "",
     };
 
-    const response = await request(app).post("/api/sign-in").send({
-      email: fakeRequest.email,
-      password: fakeRequest.password,
-    });
+    const response = await request(app)
+      .post("/api/sign-in")
+      .send({
+        email: fakeRequest.email,
+        password: fakeRequest.password,
+        role: faker.helpers.arrayElement(["DEVELOPER", "INSTRUCTOR"]),
+      });
 
     fakeRequest.token = response.body.accessToken;
   });

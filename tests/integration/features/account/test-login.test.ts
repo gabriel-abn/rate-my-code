@@ -15,10 +15,13 @@ describe("Login", () => {
   beforeAll(async () => {
     const { email, password } = fakeRequest;
 
-    const signed = await request(app).post("/api/sign-in").send({
-      email,
-      password,
-    });
+    const signed = await request(app)
+      .post("/api/sign-in")
+      .send({
+        email,
+        password,
+        role: faker.helpers.arrayElement(["DEVELOPER", "INSTRUCTOR"]),
+      });
 
     auth = signed.body.accessToken;
   });

@@ -13,12 +13,14 @@ describe("Verify Email", () => {
   let fakeRequest: {
     email: string;
     password: string;
+    role: string;
   };
 
   beforeAll(async () => {
     fakeRequest = {
       email: faker.internet.email(),
       password: "Gabriel1234!@#$",
+      role: faker.helpers.arrayElement(["DEVELOPER", "INSTRUCTOR"]),
     };
 
     const response = await request(app)
@@ -63,9 +65,11 @@ describe("Verify Email", () => {
   it("should receive a 400 if email is already verified", async () => {
     const verifiedEmail = faker.internet.email();
 
-    await request(app)
-      .post("/api/sign-in")
-      .send({ email: verifiedEmail, password: fakeRequest.password });
+    await request(app).post("/api/sign-in").send({
+      email: verifiedEmail,
+      password: fakeRequest.password,
+      role: fakeRequest.role,
+    });
 
     const token = await redisDb.get(verifiedEmail);
 

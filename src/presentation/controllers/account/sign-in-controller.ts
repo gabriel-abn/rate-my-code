@@ -12,6 +12,7 @@ const signInSchema = z.object({
     .regex(/^(?=.*[A-Z])/, "Password must contain at least one uppercase letter.")
     .regex(/^(?=.*[0-9])/, "Password must contain at least one number.")
     .regex(/^(?=.*[!@#$%^&*])/, "Password must contain at least one special character."),
+  role: z.enum(["DEVELOPER", "INSTRUCTOR"], { invalid_type_error: "Invalid role." }),
 });
 
 type SignInRequest = z.infer<typeof signInSchema>;
@@ -23,11 +24,12 @@ export class SignInController extends Controller<SignInRequest> {
   }
 
   async run(request: HttpRequest<SignInRequest>): Promise<object> {
-    const { email, password } = request.body;
+    const { email, password, role } = request.body;
 
     const response = await this.useCase.execute({
-      email: email,
-      password: password,
+      email,
+      password,
+      role,
     });
 
     return response;

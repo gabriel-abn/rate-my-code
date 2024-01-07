@@ -35,6 +35,7 @@ export class SignInUseCase implements SignIn.UseCase {
     const user = new User({
       email: data.email,
       password: hashedPassword,
+      role: data.role,
     });
 
     const confirmationToken = randomUUID().split("-")[0].toUpperCase();

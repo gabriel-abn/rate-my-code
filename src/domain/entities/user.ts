@@ -1,26 +1,37 @@
 import { Entity } from "@domain/common/entity";
 
+type Profile = {
+  firstName: string;
+  lastName: string;
+  avatar: string;
+};
+
 type UserProps = {
-  profile?: {
-    firstName: string;
-    lastName: string;
-    avatar: string;
-  };
+  profile: Profile;
   email: string;
   password: string;
-  emailVerified?: boolean;
+  emailVerified: boolean;
+  role: string;
 };
 
 class User extends Entity<UserProps> {
-  constructor(props: Omit<UserProps, "profile">, id: string) {
-    super(props, id);
+  constructor(props: Omit<UserProps, "profile" | "emailVerified" | "role">, id?: string) {
+    super(
+      {
+        profile: undefined,
+        emailVerified: false,
+        role: undefined,
+        ...props,
+      },
+      id ? id : undefined,
+    );
   }
 
-  get profile(): { firstName: string; lastName: string; avatar: string } {
+  get profile(): Profile {
     return this.props.profile;
   }
 
-  set profile(profile: Partial<UserProps["profile"]>) {
+  set profile(profile: Partial<Profile>) {
     this.props.profile = {
       ...this.props.profile,
       ...profile,
@@ -44,4 +55,4 @@ class User extends Entity<UserProps> {
   }
 }
 
-export { User, UserProps };
+export { Profile, User, UserProps };

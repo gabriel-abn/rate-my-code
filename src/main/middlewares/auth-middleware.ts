@@ -1,9 +1,8 @@
 import jwtCrypter from "@infra/jwt/jwt-crypter";
-import { Permission } from "@presentation/common/auth";
 
 import { NextFunction, Request, Response } from "express";
 
-export const authMiddleware = (permission?: Permission) => {
+export const authMiddleware = (permission?: number) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     let accessToken: string[] | undefined;
 

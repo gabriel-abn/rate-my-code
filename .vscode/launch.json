@@ -1,0 +1,36 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Vitest Debug",
+      "type": "node",
+      "request": "launch",
+      "restart": false,
+      "cwd": "${workspaceFolder}",
+      "program": "${workspaceFolder}/node_modules/vitest/vitest.mjs",
+      "args": [
+        "--config",
+        "./tests/config/vitest.integration.config.ts",
+        "--test-timeout=0"
+      ],
+      "console": "externalTerminal", // Attach to the integrated terminal
+      "internalConsoleOptions": "neverOpen" // Prevent opening a separate debug console
+    },
+    {
+      "name": "Vitest Debug (file)",
+      "type": "node",
+      "request": "launch",
+      "restart": false,
+      "cwd": "${workspaceFolder}",
+      "program": "${workspaceFolder}/node_modules/vitest/vitest.mjs",
+      "args": [
+        "${relativeFile}",
+        "--config",
+        "./tests/config/vitest.integration.config.ts",
+        "--test-timeout=0"
+      ],
+      "console": "externalTerminal", // Attach to the integrated terminal
+      "internalConsoleOptions": "neverOpen" // Prevent opening a separate debug console
+    }
+  ]
+}

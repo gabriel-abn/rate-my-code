@@ -1,0 +1,11 @@
+{
+  "conventionalCommits.scopes": [
+    "SignIn",
+    "User",
+    "VerifyEmail",
+    "Login",
+    "UpdateProfile",
+    "UpdateProfile",
+    "MakePost"
+  ]
+}

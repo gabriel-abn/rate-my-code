@@ -43,3 +43,58 @@ For the posts that are meant to be informative articles, the user can choose tag
 ### Feedback
 
 A feedback is a text written by any user. Every feedback is related to a post as a response and can be rated by other mentors/instructors and developers. This rate will be used as a mesure for its relevance. The higher the rating, the more visibility the feedback will have and the more reputation the author will gain.
+
+---
+
+Initially, users will be able to pin a limited number of repositories from their GitHub, GitLab, and BitBucket profiles. From there, other users will be able to rate the code of these repositories, so that the user being rated can improve their programming skills.
+
+The first stage of code review will be done by a system of the platform itself, which can provide inline feedback on the code. For example:
+
+```typescript
+export class Usuario {
+  private na: string;
+  private eml: string;
+  private pasw: string;
+
+  constructor(na: string, eml: string, pasw: string) {
+    this.na = na;
+    this.eml = eml;
+    this.pasw = pasw;
+  }
+
+  public get na(): string {
+    return this.na;
+  }
+
+  public get eml(): string {
+    return this.eml;
+  }
+
+  public get pasw(): string {
+    return this.pasw;
+  }
+}
+
+// 1. Use more descriptive variable names
+// 2. Use English nomenclature
+```
+
+In the code above, the system imports a repository from one of the platforms, and performs a static analysis of the code, providing inline feedback on the code. In the example above, the system suggests that the user use more descriptive variable names and use English nomenclature. These analyses will be done through an API that will be developed by the RateMyCode team, considering that they will not be more detailed analyses of the code, such as cyclomatic complexity analysis for example, but simpler analyses, such as nomenclature analysis.
+
+The second stage of code review will be done by other users of the platform, who will be able to rate the code in a more subjective way, providing feedback on the code.
+
+We will have types of reviews:
+
+- **Code reviews**: The code review will be intended to evaluate the code itself, that is, comments on the structure of the code, nomenclature, complexity, etc.
+
+- **Test reviews**: The test review will be intended to evaluate the code tests, that is, comments on test coverage, quality of tests, etc.
+
+- **Architecture reviews**: This will be more subjective, as it will be intended to evaluate the code architecture, that is, comments on modularization, separation of responsibilities, etc.
+
+- **Solution reviews**: The solution review will be intended to evaluate the solution to the proposed problem, that is, comments on the efficiency of the solution, provided that the rated user better describes what was the problem that was, or is being solved.
+
+### Review Credibility
+
+For reviews to have credibility, users who rate other users' code will have to have a certain level of reputation, which will be acquired from positive reviews they receive from other users. In addition, users who rate other users' code will have to have a certain level of knowledge in the programming language of the code being reviewed, which will be acquired from positive reviews they receive from other users.
+
+It may be possible to send certifications and professional achievements to the platform, so that the user can acquire reputation and knowledge points.

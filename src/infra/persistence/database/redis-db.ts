@@ -36,6 +36,14 @@ class RedisDB implements KeyValueDatabase {
     }
   }
 
+  async deleteAll(): Promise<void> {
+    try {
+      await this.client.flushall();
+    } catch (err) {
+      throw new DatabaseError(err);
+    }
+  }
+
   async exists(key: string): Promise<boolean> {
     try {
       const exists = await this.client.exists(key);

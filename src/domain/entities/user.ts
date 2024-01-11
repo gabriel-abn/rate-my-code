@@ -12,6 +12,7 @@ type UserProps = {
   password: string;
   emailVerified: boolean;
   role: string;
+  roleId?: string;
 };
 
 class User extends Entity<UserProps> {
@@ -47,6 +48,10 @@ class User extends Entity<UserProps> {
 
   get isVerified(): boolean {
     return this.props.emailVerified;
+  }
+
+  get role(): string {
+    return this.props.role;
   }
 
   static restore(props: UserProps, id: string): User {

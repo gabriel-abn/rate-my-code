@@ -8,7 +8,7 @@ import tokenRepository from "@infra/persistence/repositories/token-repository";
 import userRepository from "@infra/persistence/repositories/user-repository";
 import emailService from "@infra/services/email-service";
 
-import Controller from "@presentation/common/controller";
+import { Controller } from "@presentation/common/controller";
 import { SignInController } from "@presentation/controllers";
 
 import { Factory } from "../factory";

@@ -3,7 +3,7 @@ import { Login } from "@domain/use-cases";
 import Hasher from "@infra/cryptography/hasher";
 import jwtAdapter from "@infra/jwt/jwt-crypter";
 import userRepository from "@infra/persistence/repositories/user-repository";
-import Controller from "@presentation/common/controller";
+import { Controller } from "@presentation/common/controller";
 import { LoginController } from "@presentation/controllers/account";
 import { Factory } from "../factory";
 

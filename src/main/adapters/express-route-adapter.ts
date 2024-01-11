@@ -1,4 +1,4 @@
-import Controller from "@presentation/common/controller";
+import { Controller } from "@presentation/common";
 import { HttpRequest } from "@presentation/common/http";
 
 import { Request, Response } from "express";

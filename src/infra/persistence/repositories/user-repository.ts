@@ -1,23 +1,19 @@
 import IUserRepository from "@application/repositories/user-repository";
 import { CheckEmailAvailability, CheckUserEmail } from "@application/use-cases";
 import { User } from "@domain/entities";
-import { PrismaClient } from "@prisma/client";
 import { RelationalDatabase } from "../common";
 import postgres from "../database/postgres";
-import prisma from "../database/prisma";
 
 class UserRepository implements IUserRepository, CheckEmailAvailability, CheckUserEmail {
-  constructor(
-    private database: RelationalDatabase,
-    private prisma: PrismaClient,
-  ) {}
+  constructor(private database: RelationalDatabase) {}
 
+  // TODO Remove this method
   async checkEmail(email: string): Promise<boolean> {
     const user = await this.database
       .query(
         `
           SELECT  id
-          FROM    "user"
+          FROM    user
           WHERE   email = $1;
         `,
         [email],
@@ -34,7 +30,7 @@ class UserRepository implements IUserRepository, CheckEmailAvailability, CheckUs
   async verifyEmail(email: string): Promise<void> {
     await this.database.query(
       `
-          UPDATE  "user"
+          UPDATE  user
           SET     email_verified = true
           WHERE   email = $1;
         `,
@@ -46,9 +42,9 @@ class UserRepository implements IUserRepository, CheckEmailAvailability, CheckUs
     const user = await this.database
       .query(
         `
-          SELECT  id, email, password, email_verified AS "emailVerified"
-          FROM    "user"
-          WHERE   email = $1;
+          SELECT  u.id, u.email, u.password, u.email_verified AS "emailVerified", r.id as "role"
+          FROM    user u JOIN (developer d UNION ALL instructor i) r
+          WHERE   u.email = $1;
         `,
         [email],
       )
@@ -62,25 +58,45 @@ class UserRepository implements IUserRepository, CheckEmailAvailability, CheckUs
   }
 
   async save(user: User): Promise<string> {
-    const { id } = await this.prisma.user.create({
-      data: {
-        email: user.email,
-        password: user.password,
-      },
-      select: {
-        id: true,
-      },
-    });
+    const { id } = await this.database
+      .execute(
+        `
+          INSERT INTO user (email, password)
+          VALUES ($1, $2)
+          RETURNING id;
+        `,
+        [user.email, user.password],
+      )
+      .then(async (rows) => {
+        const id = rows[0].id;
+
+        if (user.role == "INSTRUCTOR") {
+          await this.database.execute(
+            `
+              INSERT INTO instructor (user_id, first_name, last_name)
+              VALUES ($1, $2, $3);
+            `,
+            [id, user.profile.firstName, user.profile.lastName],
+          );
+
+          return id;
+        }
+      });
 
     return id;
   }
 
   async getById(id: string): Promise<User> {
-    const userProps = await this.prisma.user.findUnique({
-      where: {
-        id,
-      },
-    });
+    const userProps = await this.database
+      .query(
+        `
+          SELECT  u.id, u.email, u.password, u.email_verified AS "emailVerified", r.id as "roleId"
+          FROM    user u JOIN (developer d UNION ALL instructor i) r
+          WHERE   u.id = $1;
+        `,
+        [id],
+      )
+      .then((rows) => rows[0]);
 
     const user = User.restore(userProps, id);
 
@@ -88,20 +104,16 @@ class UserRepository implements IUserRepository, CheckEmailAvailability, CheckUs
   }
 
   async update(id: string, user: User): Promise<boolean> {
-    const userProps = await this.prisma.user.update({
-      where: {
-        id,
-      },
-      data: {
-        email: user.email,
-        password: user.password,
-      },
-      select: {
-        id: true,
-      },
-    });
+    const updated = await this.database.execute(
+      `
+        UPDATE  user
+        SET     password = $2, role = $3
+        WHERE   id = $1;
+      `,
+      [id, user.password, user.role],
+    );
 
-    if (!userProps) {
+    if (!updated) {
       return false;
     }
 
@@ -109,4 +121,4 @@ class UserRepository implements IUserRepository, CheckEmailAvailability, CheckUs
   }
 }
 
-export default new UserRepository(postgres, prisma);
+export default new UserRepository(postgres);

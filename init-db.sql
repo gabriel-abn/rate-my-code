@@ -1,92 +1,92 @@
-drop schema if exists public cascade;
+DROP SCHEMA IF EXISTS public CASCADE;
 
-create schema public;
+CREATE SCHEMA public;
 
 --
-drop table if exists user cascade;
+DROP TABLE IF EXISTS user CASCADE;
 
-create table user (
-  id varchar(16) not null,
-  password varchar(255) not null,
-  email varchar(255) not null,
-  email_verified boolean default false,
-  role varchar(255) default 'DEVELOPER',
-  created_at timestamp not null default current_timestamp,
-  -- 
-  constraint "user_pkey" primary key (id)
+CREATE TABLE user (
+  id VARCHAR(16) NOT NULL,
+  password VARCHAR(255) NOT NULL,
+  email VARCHAR(255) NOT NULL,
+  email_verified boolean DEFAULT false,
+  role VARCHAR(255) DEFAULT 'developer',
+  created_at TIMESTAMP NOT NULL DEFAULT current_timestamp,
+  --
+  CONSTRAINT "user_pkey" PRIMARY KEY (id)
 );
 
 --
-drop table if exists developer cascade;
+DROP TABLE IF EXISTS developer CASCADE;
 
-create table developer(
-  id varchar(16),
-  user_id varchar(16) not null,
-  created_at timestamp not null default current_timestamp,
-  -- 
-  constraint "developer_pkey" primary key (id, user_id),
+CREATE TABLE developer (
+  id VARCHAR(16),
+  user_id VARCHAR(16) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT current_timestamp,
   --
-  constraint "developer_user_id_fkey" foreign key (user_id) references "user" (id) on delete cascade
+  CONSTRAINT "developer_pkey" PRIMARY KEY (id, user_id),
+  --
+  CONSTRAINT "developer_user_id_fkey" FOREIGN KEY (user_id) REFERENCES "user" (id) ON DELETE CASCADE
 );
 
 --
-drop table if exists instructor cascade;
+DROP TABLE IF EXISTS instructor CASCADE;
 
-create table instructor(
-  id varchar(16) not null,
-  user_id varchar(16) not null,
-  created_at timestamp not null default current_timestamp,
-  -- 
-  constraint "instructor_pkey" primary key (id, user_id),
+CREATE TABLE instructor(
+  id VARCHAR(16) NOT NULL,
+  user_id VARCHAR(16) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT current_timestamp,
   --
-  constraint "instructor_user_id_fkey" foreign key (user_id) references "user" (id) on delete cascade
+  CONSTRAINT "instructor_pkey" PRIMARY KEY (id, user_id),
+  --
+  CONSTRAINT "instructor_user_id_fkey" FOREIGN KEY (user_id) REFERENCES "user" (id) ON DELETE CASCADE
 );
 
 --
-drop table if exists profile cascade;
+DROP TABLE IF EXISTS profile CASCADE;
 
-create table profile (
-  id varchar(16) not null,
-  first_name varchar(255) not null,
-  last_name varchar(255),
-  avatar_url varchar(255),
-  user_id varchar(16) not null,
-  created_at timestamp not null default current_timestamp,
-  -- 
-  constraint "profile_pkey" primary key (id),
+CREATE TABLE profile (
+  id VARCHAR(16) NOT NULL,
+  first_name VARCHAR(255) NOT NULL,
+  last_name VARCHAR(255),
+  avatar_url VARCHAR(255),
+  user_id VARCHAR(16) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT current_timestamp,
   --
-  constraint "profile_user_id_fkey" foreign key (user_id) references "user" (id) on delete cascade
+  CONSTRAINT "profile_pkey" PRIMARY KEY (id),
+  --
+  CONSTRAINT "profile_user_id_fkey" FOREIGN KEY (user_id) REFERENCES "user" (id) ON DELETE CASCADE
 );
 
 --
-drop table if exists post cascade;
+DROP TABLE IF EXISTS post CASCADE;
 
-create table post (
-  id varchar(16) not null,
-  title varchar(255) not null,
-  content text not null,
-  tags varchar(255) [],
-  user_id varchar(16) not null,
-  created_at timestamp not null default current_timestamp,
-  -- 
-  constraint "post_pkey" primary key (id),
+CREATE TABLE post (
+  id VARCHAR(16) NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  content TEXT NOT NULL,
+  tags VARCHAR(255) [],
+  user_id VARCHAR(16) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT current_timestamp,
   --
-  constraint "post_user_id_fkey" foreign key (user_id) references "user" (id) on delete cascade
+  CONSTRAINT "post_pkey" PRIMARY KEY (id),
+  --
+  CONSTRAINT "post_user_id_fkey" FOREIGN KEY (user_id) REFERENCES "user" (id) ON DELETE CASCADE
 );
 
 --
-drop table if exists feedback cascade;
+DROP TABLE IF EXISTS feedback CASCADE;
 
-create table feedback (
-  id varchar(16) not null,
-  content text not null,
-  rating int default 0,
-  user_id varchar(16) not null,
-  post_id varchar(16) not null,
-  created_at timestamp not null default current_timestamp,
-  -- 
-  constraint "feedback_pkey" primary key (id),
+CREATE TABLE feedback (
+  id VARCHAR(16) NOT NULL,
+  content TEXT NOT NULL,
+  rating INT DEFAULT 0,
+  user_id VARCHAR(16) NOT NULL,
+  post_id VARCHAR(16) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT current_timestamp,
   --
-  constraint "feedback_user_id_fkey" foreign key (user_id) references "user" (id) on delete cascade,
-  constraint "feedback_post_id_fkey" foreign key (post_id) references "post" (id) on delete cascade
+  CONSTRAINT "feedback_pkey" PRIMARY KEY (id),
+  --
+  CONSTRAINT "feedback_user_id_fkey" FOREIGN KEY (user_id) REFERENCES "user" (id) ON DELETE CASCADE,
+  CONSTRAINT "feedback_post_id_fkey" FOREIGN KEY (post_id) REFERENCES "post" (id) ON DELETE CASCADE
 );

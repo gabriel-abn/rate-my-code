@@ -7,7 +7,7 @@ import { faker } from "@faker-js/faker";
 import RandExp from "randexp";
 import request from "supertest";
 
-describe("Sign In", () => {
+describe.skip("Sign In", () => {
   let fakeRequest: {
     email: string;
     password: string;

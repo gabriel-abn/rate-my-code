@@ -1,5 +1,5 @@
 import ApplicationError from "@application/common/application-error";
-import IUserRepository from "@application/repositories/user-repository";
+import { IUserRepository } from "@application/repositories/user-repository";
 import { VerifyEmail } from "@domain/use-cases";
 
 export interface CheckUserEmail {

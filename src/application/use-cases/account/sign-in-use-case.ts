@@ -1,7 +1,7 @@
 import ApplicationError from "@application/common/application-error";
 import { IEncrypter, IHasher } from "@application/protocols";
 import SendEmail from "@application/protocols/services/send-email";
-import IUserRepository from "@application/repositories/user-repository";
+import { IUserRepository } from "@application/repositories/user-repository";
 import { User } from "@domain/entities";
 import { SignIn } from "@domain/use-cases";
 import { randomUUID } from "crypto";
@@ -32,11 +32,14 @@ export class SignInUseCase implements SignIn.UseCase {
 
     const hashedPassword = await this.hasher.hash(data.password);
 
-    const user = new User({
-      email: data.email,
-      password: hashedPassword,
-      role: data.role,
-    });
+    const user = new User(
+      {
+        email: data.email,
+        password: hashedPassword,
+        role: data.role,
+      },
+      randomUUID().split("-")[0].toUpperCase(),
+    );
 
     const confirmationToken = randomUUID().split("-")[0].toUpperCase();
 

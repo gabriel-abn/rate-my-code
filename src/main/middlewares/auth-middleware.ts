@@ -36,7 +36,7 @@ export const authMiddleware = (permission?: number) => {
         next();
       }
 
-      req.body = { ...req.body, id };
+      req.headers["userId"] = id;
 
       next();
     } catch (error) {

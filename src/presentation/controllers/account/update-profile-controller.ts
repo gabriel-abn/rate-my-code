@@ -3,7 +3,6 @@ import { Controller, HttpRequest } from "@presentation/common";
 import { z } from "zod";
 
 export const schema = z.object({
-  id: z.string(),
   firstName: z.string().min(3).max(255),
   lastName: z.string().min(3).max(255).optional(),
   avatar: z.string().url().optional(),
@@ -18,7 +17,8 @@ export class UpdateProfileController extends Controller<UpdateProfileRequest> {
   }
 
   async run(request: HttpRequest<UpdateProfileRequest>): Promise<{ updated: boolean }> {
-    const { firstName, lastName, avatar, id: userId } = request.body;
+    const { firstName, lastName, avatar } = request.body;
+    const userId = request.headers["userId"];
 
     const response = await this.useCase.execute({
       userId,

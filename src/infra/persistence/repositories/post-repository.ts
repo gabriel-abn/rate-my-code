@@ -10,7 +10,7 @@ class PostRepository implements IPostRepository {
     try {
       await this.database.execute(
         `
-          INSERT INTO posts (id, title, content, user_id)
+          INSERT INTO public.posts (id, title, content, user_id)
           VALUES ($1, $2, $3, $4, $5);
         `,
         [post.id, post.title, post.content, post.userId],
@@ -25,7 +25,7 @@ class PostRepository implements IPostRepository {
       const postProps = await this.database
         .query(
           `
-            SELECT * FROM posts WHERE id = $1;
+            SELECT * FROM public.posts WHERE id = $1;
           `,
           [id],
         )
@@ -44,7 +44,7 @@ class PostRepository implements IPostRepository {
       const posts = await this.database
         .query(
           `
-            SELECT * FROM posts;
+            SELECT * FROM public.posts;
           `,
         )
         .then((rows) => rows.map((row) => Post.restore(row, row.id)));
@@ -59,7 +59,7 @@ class PostRepository implements IPostRepository {
     try {
       await this.database.execute(
         `
-          DELETE FROM posts WHERE id = $1;
+          DELETE FROM public.posts WHERE id = $1;
         `,
         [id],
       );
@@ -72,7 +72,7 @@ class PostRepository implements IPostRepository {
     try {
       await this.database.execute(
         `
-          UPDATE posts
+          UPDATE public.posts
           SET title = $1, content = $2
           WHERE id = $3;
         `,

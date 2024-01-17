@@ -1,6 +1,6 @@
 import ApplicationError from "@application/common/application-error";
 import { IEncrypter, IHasher } from "@application/protocols";
-import IUserRepository from "@application/repositories/user-repository";
+import { IUserRepository } from "@application/repositories/user-repository";
 import { Login } from "@domain/use-cases";
 
 export class LoginUseCase implements Login.UseCase {
@@ -32,7 +32,7 @@ export class LoginUseCase implements Login.UseCase {
       throw new ApplicationError("Email not verified.", "EMAIL_NOT_VERIFIED");
     }
 
-    const token = await this.crypter.encrypt(user.id);
+    const token = this.crypter.encrypt({ id: user.id, role: user.role });
 
     return {
       accessToken: token,

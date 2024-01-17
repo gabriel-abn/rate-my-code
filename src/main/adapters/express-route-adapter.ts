@@ -8,6 +8,12 @@ export const adaptRoute = (controller: Controller) => {
     const httpRequest: HttpRequest<any> = {
       body: { ...req.body } || {},
       params: { ...req.params, ...req.query } || {},
+      headers:
+        "userId" in req.headers
+          ? {
+              userId: req.headers["userId"],
+            }
+          : null,
     };
 
     const httpResponse = await controller.handle(httpRequest);

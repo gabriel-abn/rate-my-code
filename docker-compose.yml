@@ -19,6 +19,7 @@ services:
       POSTGRES_DB: rate-my-code
     volumes:
       - app-psql-volume
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
 
   redis:
     image: redis:latest

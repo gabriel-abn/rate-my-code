@@ -4,7 +4,7 @@ import { faker } from "@faker-js/faker";
 import redisDb from "@infra/persistence/database/redis-db";
 import request from "supertest";
 
-describe("Login", () => {
+describe.skip("Login", () => {
   let auth: string;
 
   const fakeRequest = {

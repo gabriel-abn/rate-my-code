@@ -1,5 +1,7 @@
 import loadEnvVars from "./config/env";
 import { accountRoutes } from "./routes";
+import feedbackRoutes from "./routes/feedback";
+import { postRouter } from "./routes/post";
 
 import express, { Request, Response, json } from "express";
 
@@ -20,9 +22,12 @@ app.listen(PORT, () => {
 app.get("/", (req: Request, res: Response) => {
   res.status(200).send({
     message: "Hello world! Server is running.",
+    hostname: req.hostname,
   });
 });
 
-app.use("/api", [accountRoutes]);
+app.use("/api/account", accountRoutes);
+app.use("/api/feedback", feedbackRoutes);
+app.use("/api/post", postRouter);
 
 export default app;

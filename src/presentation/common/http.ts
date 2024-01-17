@@ -1,11 +1,12 @@
 export type HttpRequest<T> = {
   body?: T;
   params?: any;
-  headers?: {
-    [key: string]: any;
-    userId: string;
-    email: string;
-  };
+  headers?:
+    | {
+        [key: string]: any;
+        userId: string;
+      }
+    | any;
 };
 
 export type HttpResponse = {

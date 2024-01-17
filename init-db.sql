@@ -3,9 +3,9 @@ DROP SCHEMA IF EXISTS public CASCADE;
 CREATE SCHEMA public;
 
 --
-DROP TABLE IF EXISTS user CASCADE;
+DROP TABLE IF EXISTS "user" CASCADE;
 
-CREATE TABLE user (
+CREATE TABLE "user" (
   id VARCHAR(16) NOT NULL,
   password VARCHAR(255) NOT NULL,
   email VARCHAR(255) NOT NULL,
@@ -32,7 +32,7 @@ CREATE TABLE developer (
 --
 DROP TABLE IF EXISTS instructor CASCADE;
 
-CREATE TABLE instructor(
+CREATE TABLE instructor (
   id VARCHAR(16) NOT NULL,
   user_id VARCHAR(16) NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT current_timestamp,

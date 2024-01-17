@@ -1,5 +1,5 @@
 import ApplicationError from "@application/common/application-error";
-import IUserRepository from "@application/repositories/user-repository";
+import { IUserRepository } from "@application/repositories/user-repository";
 import { UpdateProfile } from "@domain/use-cases";
 
 export class UpdateProfileUseCase implements UpdateProfile.UseCase {

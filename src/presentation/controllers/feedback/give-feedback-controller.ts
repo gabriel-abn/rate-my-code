@@ -4,7 +4,6 @@ import { z } from "zod";
 
 const schema = z.object({
   postId: z.string(),
-  userId: z.string(),
   content: z.string().min(3).max(10000),
 });
 
@@ -18,7 +17,8 @@ export class GiveFeedbackController extends Controller<GiveFeedbackRequest> {
   }
 
   async run(request: HttpRequest<GiveFeedbackRequest>): Promise<{ id: string }> {
-    const { postId, userId, content } = request.body;
+    const { postId, content } = request.body;
+    const { userId } = request.headers;
 
     const response = await this.useCase.execute({
       postId,

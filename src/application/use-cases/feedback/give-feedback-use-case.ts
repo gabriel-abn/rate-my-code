@@ -14,7 +14,7 @@ export class GiveFeedbackUseCase implements GiveFeedback.UseCase {
         postId: params.postId,
         content: params.content,
       },
-      randomUUID().split("-").join(""),
+      randomUUID().split("-")[0],
     );
 
     const saved = await this.feedbackRepository.save(feedback);

@@ -4,6 +4,7 @@ import deleteFeedbackFactory from "@main/factories/feedback/delete-feedback-fact
 import editFeedbackFactory from "@main/factories/feedback/edit-feedback-factory";
 import giveFeedbackFactory from "@main/factories/feedback/give-feedback-factory";
 import rateFeedbackFactory from "@main/factories/feedback/rate-feedback-factory";
+import { authMiddleware } from "@main/middlewares/auth-middleware";
 
 import { Router } from "express";
 
@@ -11,7 +12,7 @@ const feedbackRoutes = Router();
 
 feedbackRoutes.post("/rate", adaptRoute(rateFeedbackFactory.create()));
 
-feedbackRoutes.post("/make", adaptRoute(giveFeedbackFactory.create()));
+feedbackRoutes.post("/make", authMiddleware(), adaptRoute(giveFeedbackFactory.create()));
 
 feedbackRoutes.put("/update", adaptRoute(editFeedbackFactory.create()));
 

@@ -11,7 +11,7 @@ class FeedbackRepository implements IFeedbackRepository {
     const feedback = await this.database
       .query(
         `
-        SELECT * 
+        SELECT id, content, rating, rates_count as "rates", user_id, post_id
         FROM public.feedback 
         WHERE id = $1;
       `,
@@ -26,22 +26,22 @@ class FeedbackRepository implements IFeedbackRepository {
     return await this.database.execute(
       `
         UPDATE public.feedback 
-        SET content = $1, rating = $2 
-        WHERE id = $3;
+        SET content = $1, rating = $2, rates_count = $3
+        WHERE id = $4;
       `,
-      [feedback.content, feedback.rating, feedback.id],
+      [feedback.content, feedback.rating, feedback.rates, feedback.id],
     );
   }
 
   async save(feedback: Feedback): Promise<boolean> {
-    const { content, rating, userId, postId } = feedback.getProps();
+    const { content, userId, postId } = feedback.getProps();
 
     return await this.database.execute(
       `
-        INSERT INTO public.feedback (id, content, rating, user_id, post_id) 
-        VALUES ($1, $2, $3, $4, $5);
+        INSERT INTO public.feedback (id, content, user_id, post_id) 
+        VALUES ($1, $2, $3, $4);
       `,
-      [feedback.id, content, rating, userId, postId],
+      [feedback.id, content, userId, postId],
     );
   }
 

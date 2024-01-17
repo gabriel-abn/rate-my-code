@@ -8,14 +8,13 @@ import { authMiddleware } from "@main/middlewares/auth-middleware";
 
 import { Router } from "express";
 
-const feedbackRoutes = Router();
+const routes = Router();
 
-feedbackRoutes.post("/rate", adaptRoute(rateFeedbackFactory.create()));
+routes.post("/rate", adaptRoute(rateFeedbackFactory.create()));
+routes.post("/make", adaptRoute(giveFeedbackFactory.create()));
+routes.put("/update", adaptRoute(editFeedbackFactory.create()));
+routes.delete("/delete", adaptRoute(deleteFeedbackFactory.create()));
 
-feedbackRoutes.post("/make", authMiddleware(), adaptRoute(giveFeedbackFactory.create()));
-
-feedbackRoutes.put("/update", adaptRoute(editFeedbackFactory.create()));
-
-feedbackRoutes.delete("/delete", adaptRoute(deleteFeedbackFactory.create()));
+const feedbackRoutes = Router().use("/feedback", authMiddleware(), routes);
 
 export default feedbackRoutes;

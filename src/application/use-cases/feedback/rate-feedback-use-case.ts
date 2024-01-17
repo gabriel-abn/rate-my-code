@@ -10,7 +10,8 @@ export class RateFeedbackUseCase implements RateFeedback.UseCase {
 
     const feedback = await this.repository.get(id);
 
-    feedback.rating = rating;
+    feedback.rates = feedback.rates + 1;
+    feedback.rating = (feedback.rating + rating) / feedback.rates;
 
     const updated = await this.repository.update(feedback);
 

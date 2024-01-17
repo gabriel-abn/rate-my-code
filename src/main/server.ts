@@ -1,7 +1,7 @@
 import loadEnvVars from "./config/env";
-import { accountRoutes } from "./routes";
+import accountRoutes from "./routes/account";
 import feedbackRoutes from "./routes/feedback";
-import { postRouter } from "./routes/post";
+import postRouter from "./routes/post";
 
 import express, { Request, Response, json } from "express";
 
@@ -26,8 +26,6 @@ app.get("/", (req: Request, res: Response) => {
   });
 });
 
-app.use("/api/account", accountRoutes);
-app.use("/api/feedback", feedbackRoutes);
-app.use("/api/post", postRouter);
+app.use("/api", [feedbackRoutes, accountRoutes, postRouter]);
 
 export default app;

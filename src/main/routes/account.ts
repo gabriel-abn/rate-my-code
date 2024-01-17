@@ -7,20 +7,20 @@ import { authMiddleware } from "@main/middlewares/auth-middleware";
 
 import { Router } from "express";
 
-export const accountRoutes = Router();
+const routes = Router();
 
-accountRoutes.post("/sign-in", adaptRoute(signInFactory.create()));
+routes.post("/sign-in", adaptRoute(signInFactory.create()));
 
-accountRoutes.post(
-  "/verify-email",
-  authMiddleware(),
-  adaptRoute(verifyEmailFactory.create()),
-);
+routes.post("/verify-email", authMiddleware(), adaptRoute(verifyEmailFactory.create()));
 
-accountRoutes.post("/login", adaptRoute(loginFactory.create()));
+routes.post("/login", adaptRoute(loginFactory.create()));
 
-accountRoutes.put(
+routes.put(
   "/update-profile",
   authMiddleware(),
   adaptRoute(updateProfileFactory.create()),
 );
+
+const accountRoutes = Router().use("/account", routes);
+
+export default accountRoutes;

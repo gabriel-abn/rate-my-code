@@ -3,7 +3,7 @@ import { Controller, HttpRequest } from "@presentation/common";
 import { z } from "zod";
 
 const schema = z.object({
-  id: z.string(),
+  postId: z.string(),
   rating: z
     .number()
     .min(1, "Rating must be between 1 and 5.")
@@ -22,10 +22,10 @@ export class RateFeedbackController extends Controller<RateFeedbackRequest> {
   async run(
     request: HttpRequest<RateFeedbackRequest>,
   ): Promise<RateFeedback.Result & { rated: boolean }> {
-    const { id, rating } = request.body;
+    const { postId, rating } = request.body;
 
     const response = await this.useCase.execute({
-      id,
+      id: postId,
       rating,
     });
 

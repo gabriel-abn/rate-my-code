@@ -56,25 +56,57 @@ describe("Test e2e", () => {
     expect(updateProfile.status).toBe(200);
   });
 
-  it.skip("should create post", async () => {
+  it("should create post", async () => {
     const post = {
       title: faker.lorem.words(3),
       content: faker.lorem.paragraph(3),
+      tags: [faker.lorem.word(), faker.lorem.word()],
     };
 
-    createPost = await request(app).post("/api/post/create").send(post);
+    createPost = await request(app)
+      .post("/api/post/make")
+      .send(post)
+      .auth(login.body.accessToken, { type: "bearer" });
 
     expect(createPost.status).toBe(200);
   });
 
-  it.skip("should be able to give feedback", async () => {
+  it("should be able to give feedback", async () => {
     const feedback = {
-      comment: faker.lorem.paragraph(3),
-      rating: 5,
+      postId: createPost.body.id,
+      content: faker.lorem.paragraph(3),
     };
 
-    giveFeedback = await request(app).post("/api/feedback/give").send(feedback);
+    giveFeedback = await request(app)
+      .post("/api/feedback/make")
+      .send(feedback)
+      .auth(login.body.accessToken, { type: "bearer" });
 
     expect(giveFeedback.status).toBe(200);
+  });
+
+  it("should be able to rate feedback", async () => {
+    const rateFeedback = await request(app)
+      .post("/api/feedback/rate")
+      .send({
+        postId: giveFeedback.body.id,
+        rating: 3,
+      })
+      .auth(login.body.accessToken, { type: "bearer" });
+
+    expect(rateFeedback.status).toBe(200);
+  });
+
+  it("should be able to update feedback rating", async () => {
+    const rateFeedback = await request(app)
+      .post("/api/feedback/rate")
+      .send({
+        postId: giveFeedback.body.id,
+        rating: 5,
+      })
+      .auth(login.body.accessToken, { type: "bearer" });
+
+    expect(rateFeedback.status).toBe(200);
+    expect(rateFeedback.body.updatedRating).toBe(4);
   });
 });

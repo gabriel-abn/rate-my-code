@@ -9,14 +9,18 @@ import { authMiddleware } from "@main/middlewares/auth-middleware";
 
 import { Router } from "express";
 
-export const postRouter = Router();
+const routes = Router();
 
-postRouter.post("/make", authMiddleware(), adaptRoute(makePostFactory.create()));
+routes.post("/make", adaptRoute(makePostFactory.create()));
 
-postRouter.get("/get", adaptRoute(getPostFactory.create()));
+routes.get("/get", adaptRoute(getPostFactory.create()));
 
-postRouter.get("/get-all", adaptRoute(getAllPostsFactory.create()));
+routes.get("/get-all", adaptRoute(getAllPostsFactory.create()));
 
-postRouter.put("/edit", adaptRoute(editPostFactory.create()));
+routes.put("/edit", adaptRoute(editPostFactory.create()));
 
-postRouter.delete("/delete", adaptRoute(deletePostFactory.create()));
+routes.delete("/delete", adaptRoute(deletePostFactory.create()));
+
+const postRouter = Router().use("/post", authMiddleware(), routes);
+
+export default postRouter;

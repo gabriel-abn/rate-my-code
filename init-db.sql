@@ -81,6 +81,7 @@ CREATE TABLE feedback (
   id VARCHAR(16) NOT NULL,
   content TEXT NOT NULL,
   rating INT DEFAULT 0,
+  rates_count INT DEFAULT 0,
   user_id VARCHAR(16) NOT NULL,
   post_id VARCHAR(16) NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT current_timestamp,

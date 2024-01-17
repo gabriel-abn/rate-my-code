@@ -5,14 +5,16 @@ export type FeedbackProps = {
   postId: string;
   content: string;
   rating: number;
+  rates: number;
 };
 
 export class Feedback extends Entity<FeedbackProps> {
-  constructor(props: Omit<FeedbackProps, "rating">, id: string) {
+  constructor(props: Omit<FeedbackProps, "rating" | "rates">, id: string) {
     super(
       {
-        ...props,
         rating: 0,
+        rates: 0,
+        ...props,
       },
       id,
     );
@@ -32,6 +34,14 @@ export class Feedback extends Entity<FeedbackProps> {
 
   get rating() {
     return this.props.rating;
+  }
+
+  get rates() {
+    return this.props.rates;
+  }
+
+  set rates(rates: number) {
+    this.props.rates = rates;
   }
 
   static restore(props: FeedbackProps, id: string) {

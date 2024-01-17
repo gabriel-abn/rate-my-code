@@ -6,7 +6,6 @@ const schema = z.object({
   title: z.string().min(3).max(255),
   content: z.string().min(10).max(10000),
   tags: z.array(z.string()).max(10),
-  userId: z.string(),
 });
 
 export type MakePostRequest = z.infer<typeof schema>;
@@ -18,7 +17,8 @@ export class MakePostController extends Controller<MakePostRequest> {
   }
 
   async run(request: HttpRequest<MakePostRequest>): Promise<{ id: string }> {
-    const { title, content, userId, tags } = request.body;
+    const { title, content, tags } = request.body;
+    const { userId } = request.headers;
 
     const post = await this.useCase.execute({
       title,

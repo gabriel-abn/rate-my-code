@@ -2,6 +2,8 @@
 
 # Rate My Code
 
+![ratemycode.pgn](./docs/ratemycode.png)
+
 ## Description
 
 > The project is currently **under initial development** and is being used as a "*playground*" to learn new technologies and improve my skills, but at this moment I'm working hard to take it to another level and make it work. If you want to contribute, feel free to do so contacting me. I'll be happy to have you on board! [**LinkedIn**](https://www.linkedin.com/in/gabriel-a-batista/) | [**Gmail**](mailto:gabriel.ab.nascimento@gmail.com) | [**GitHub**](https://github.com/gabriel-abn) | Discord: gabrielb_n

@@ -2,7 +2,9 @@
 
 # Rate My Code
 
-![ratemycode.pgn](./docs/ratemycode.png)
+<div align="center">
+  <img src="./docs/ratemycode.png" width="25%" height="25%">
+</div>
 
 ## Description
 

@@ -5,4 +5,5 @@ export interface IUserRepository {
   getById(id: string): Promise<User>;
   getByEmail(email: string): Promise<[User, boolean]>;
   update(id: string, user: User): Promise<boolean>;
+  get(filter: { username?: string; email?: string; id?: string }): Promise<User>;
 }

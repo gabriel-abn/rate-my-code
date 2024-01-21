@@ -11,6 +11,7 @@ type UserProps = {
   email: string;
   password: string;
   emailVerified: boolean;
+  username: string;
   tags: string[];
   role: string;
   roleId?: string;
@@ -54,6 +55,10 @@ class User extends Entity<UserProps> {
 
   get role(): string {
     return this.props.role;
+  }
+
+  get username(): string {
+    return this.props.username;
   }
 
   get tags(): string[] {

@@ -8,6 +8,53 @@ import postgres from "../database/postgres";
 class UserRepository implements IUserRepository, CheckEmailAvailability, CheckUserEmail {
   constructor(private database: RelationalDatabase) {}
 
+  async get(filter: { username?: string; email?: string; id?: string }): Promise<User> {
+    const userProps = await this.database
+      .query(
+        `
+        SELECT  U.id, U.email, U.password, U.username,
+                U.email_verified AS "emailVerified", R.id AS "roleId",
+                p.first_name AS "firstName", p.last_name AS "lastName", p.avatar_url as "avatar", u.tags
+        FROM    public.user U
+        JOIN (
+              (SELECT *
+              FROM public.developer D)
+        UNION
+              (SELECT *
+              FROM public.instructor I)) R ON U.id = R.user_id
+        LEFT JOIN public.profile p on U.id = p.user_id
+        WHERE   ${
+          filter.username
+            ? "U.username = $1"
+            : filter.email
+              ? "U.email = $1"
+              : "U.id = $1"
+        }
+        `,
+        [{ ...filter }],
+      )
+      .then((rows) => rows[0])
+      .then((props) => {
+        if (!props) {
+          throw new DatabaseError("User not found");
+        }
+
+        return {
+          ...props,
+          profile: {
+            firstName: props.firstName,
+            lastName: props.lastName,
+            avatar: props.avatar,
+            tags: props.tags,
+          },
+        };
+      });
+
+    const user = User.restore(userProps, filter.id);
+
+    return user;
+  }
+
   async checkEmail(email: string): Promise<boolean> {
     const user = await this.database
       .query(
@@ -42,14 +89,14 @@ class UserRepository implements IUserRepository, CheckEmailAvailability, CheckUs
     const user = await this.database
       .query(
         `
-          SELECT  u.id, u.email, u.password, u.email_verified AS "emailVerified", r.id as "roleId"
+          SELECT  u.id, u.username, u.email, u.password, 
+                  u.email_verified AS "emailVerified", r.id as "roleId"
           FROM    public.user u JOIN (
-            (SELECT * 
-            FROM public.developer d)
-            UNION
-            (SELECT *
-            FROM  public.instructor i)
-              ) r 
+              (SELECT * 
+              FROM public.developer d)
+              UNION
+              (SELECT *
+              FROM  public.instructor i)) r 
           ON u.id = r.user_id
           WHERE   u.email = $1;
         `,
@@ -68,10 +115,10 @@ class UserRepository implements IUserRepository, CheckEmailAvailability, CheckUs
     await this.database
       .execute(
         `
-          INSERT INTO public.user (id, email, password)
-          VALUES ($1, $2, $3);
+          INSERT INTO public.user (id, email, password, username, role)
+          VALUES ($1, $2, $3, $4, $5);
         `,
-        [user.id, user.email, user.password],
+        [user.id, user.email, user.password, user.username, user.role],
       )
       .then(async () => {
         await this.database.execute(
@@ -109,7 +156,7 @@ class UserRepository implements IUserRepository, CheckEmailAvailability, CheckUs
     const userProps = await this.database
       .query(
         `
-        SELECT  U.id, U.email, U.password, 
+        SELECT  U.id, U.email, U.password, U.username,
                 U.email_verified AS "emailVerified", R.id AS "roleId",
                 p.first_name AS "firstName", p.last_name AS "lastName", p.avatar_url as "avatar", u.tags
         FROM    public.user U

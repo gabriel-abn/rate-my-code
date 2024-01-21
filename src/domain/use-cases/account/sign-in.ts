@@ -2,6 +2,7 @@ export namespace SignIn {
   export type Params = {
     email: string;
     password: string;
+    username: string;
     role: string;
   };
 

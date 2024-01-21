@@ -23,7 +23,8 @@ describe.sequential("Test e2e", () => {
   const account = {
     email: faker.internet.email(),
     password: "Gabriel!1234",
-    role: "DEVELOPER",
+    role: faker.helpers.arrayElement(["DEVELOPER", "INSTRUCTOR"]),
+    username: faker.internet.userName(),
   };
 
   let signin: any, confirmEmail: any, updateProfile: any, login: any;
@@ -172,10 +173,8 @@ describe.sequential("Test e2e", () => {
       expect(postsTag2.status).toBe(200);
     });
 
-    it.skip("should be able to get all posts and feedbacks from an user", async () => {
-      const postsFromUser = await request(app).get(`/api/user/posts`).send({
-        userId: createPost.body.author.id,
-      });
+    it("should be able to get all posts and feedbacks from an user", async () => {
+      const postsFromUser = await request(app).get(`/api/user/${account.username}/posts`);
 
       expect(postsFromUser.status).toBe(200);
     });

@@ -33,6 +33,21 @@
       "internalConsoleOptions": "neverOpen" // Prevent opening a separate debug console
     },
     {
+      "name": "Vitest Debug - E2E",
+      "type": "node",
+      "request": "launch",
+      "restart": false,
+      "cwd": "${workspaceFolder}",
+      "program": "${workspaceFolder}/node_modules/vitest/vitest.mjs",
+      "args": [
+        "--config",
+        "./tests/config/vitest.e2e.config.ts",
+        "--test-timeout=0"
+      ],
+      "console": "externalTerminal", // Attach to the integrated terminal
+      "internalConsoleOptions": "neverOpen" // Prevent opening a separate debug console
+    },
+    {
       "name": "Launch Dev Server",
       "type": "node",
       "request": "launch",

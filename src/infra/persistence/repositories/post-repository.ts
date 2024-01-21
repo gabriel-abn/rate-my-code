@@ -41,9 +41,7 @@ class PostRepository implements IPostRepository {
     }
   }
 
-  async getAll(filter?: {
-    tags: string[];
-  }): Promise<(PostProps & { feedbacks: number })[]> {
+  async getAll(filter?: { tags: string[] }): Promise<PostProps[]> {
     try {
       let posts: any[];
 
@@ -53,16 +51,21 @@ class PostRepository implements IPostRepository {
         posts = await this.database
           .query(
             `
-              SELECT p.user_id as "userId", COUNT(f.id) as feedbacks 
+              SELECT p.id, p.title, p.content, p.tags, 
+                p.user_id as "userId", COUNT(f.id) as "feedbacks"
               FROM public.post p LEFT JOIN public.feedback f ON p.id = f.post_id
-              WHERE p.tags && $1
+              WHERE ${
+                tags.length > 1 ? "p.tags && $1::character varying[]" : "$1 = ANY(p.tags)"
+              }
               GROUP BY p.id;
             `,
-            [tags],
+            [tags.length > 1 ? tags : tags[0]],
           )
-          .then((rows) =>
-            rows.map((row) => ({ ...row, feedbacks: Number(row.feedbacks) })),
-          );
+          .then((rows) => rows.map((row) => row))
+          .catch((error) => {
+            console.log(error);
+            return null;
+          });
 
         return posts;
       }

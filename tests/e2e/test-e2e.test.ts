@@ -159,17 +159,16 @@ describe.sequential("Test e2e", () => {
       expect(post.status).toBe(200);
     });
 
-    it.skip("should be able to get all posts from specific tags", async () => {
+    it("should be able to get all posts from specific tags", async () => {
       const postsTag = await request(app)
         .get("/api/post/")
         .query({ tags: ["javascript"] });
-
-      expect(postsTag.status).toBe(200);
 
       const postsTag2 = await request(app)
         .get("/api/post/")
         .query({ tags: ["typescript", "aws"] });
 
+      expect(postsTag.status).toBe(200);
       expect(postsTag2.status).toBe(200);
     });
 

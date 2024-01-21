@@ -15,7 +15,7 @@ routes.post("/make", authMiddleware(), adaptRoute(makePostFactory.create()));
 
 routes.get("/:id", adaptRoute(getPostWithFeedbackFactory.create()));
 
-routes.get("/get-all", adaptRoute(getAllPostsFactory.create()));
+routes.get("/", adaptRoute(getAllPostsFactory.create()));
 
 routes.put("/edit", authMiddleware(), adaptRoute(editPostFactory.create()));
 

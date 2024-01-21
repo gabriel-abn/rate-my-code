@@ -1,24 +1,21 @@
-import * as dotenv from "dotenv";
-import path from "path";
+import { z } from "zod";
 
-const loadEnvVars = () => {
-  let envPath = ".env";
+const envSchema = z.object({
+  SECRET_KEY: z.string(),
+  NODE_ENV: z.string().default("development"),
+  PORT: z
+    .string()
+    .default("3000")
+    .transform((val) => Number(val)),
+  REDIS_HOST: z.string().default("127.0.0.1"),
+  REDIS_PORT: z
+    .string()
+    .default("6379")
+    .transform((val) => Number(val)),
+  DATABASE_URL: z.string(),
+  MONGO_URL: z.string(),
+});
 
-  switch (process.env.NODE_ENV) {
-    case "test":
-      envPath = path.resolve(__dirname, "env", ".test.env");
-      break;
-    case "development":
-      envPath = path.resolve(__dirname, "env", ".dev.env");
-      break;
-    case "production":
-      envPath = path.resolve(__dirname, "env", ".prod.env");
-      break;
-    default:
-      break;
-  }
+const env = envSchema.parse(process.env);
 
-  dotenv.config({ path: envPath });
-};
-
-export default loadEnvVars;
+export default env;

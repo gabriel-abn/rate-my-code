@@ -5,5 +5,5 @@ export interface IFeedbackRepository {
   save(feedback: Feedback): Promise<boolean>;
   update(feedback: Feedback): Promise<boolean>;
   delete(id: string): Promise<boolean>;
-  getAll(): Promise<Feedback[]>;
+  getAll(filter?: { user?: string; post?: string }): Promise<Feedback[]>;
 }

@@ -5,6 +5,7 @@ export type PostProps = {
   content: string;
   tags: string[];
   userId: string;
+  feedbacks?: number;
 };
 
 export class Post extends Entity<PostProps> {

@@ -6,7 +6,7 @@ export class UpdateProfileUseCase implements UpdateProfile.UseCase {
   constructor(private userRepo: IUserRepository) {}
 
   async execute(params: UpdateProfile.Params): Promise<UpdateProfile.Result> {
-    const { userId, firstName, lastName, avatar } = params;
+    const { userId, firstName, lastName, avatar, tags } = params;
 
     const oldUser = await this.userRepo.getById(userId);
 
@@ -19,10 +19,12 @@ export class UpdateProfileUseCase implements UpdateProfile.UseCase {
     }
 
     oldUser.profile = {
-      firstName,
-      lastName,
-      avatar,
+      firstName: firstName ? firstName : oldUser.profile.firstName,
+      lastName: lastName ? lastName : oldUser.profile.lastName,
+      avatar: avatar ? avatar : oldUser.profile.avatar,
     };
+
+    oldUser.tags = oldUser.tags ? [...oldUser.tags, ...tags] : tags;
 
     const updated = await this.userRepo.update(oldUser.id, oldUser);
 

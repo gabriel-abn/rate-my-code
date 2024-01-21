@@ -1,5 +1,5 @@
 import { IPostRepository } from "@application/repositories";
-import { Post } from "@domain/entities";
+import { Post, PostProps } from "@domain/entities";
 import { DatabaseError, RelationalDatabase } from "../common";
 import postgres from "../database/postgres";
 
@@ -25,7 +25,9 @@ class PostRepository implements IPostRepository {
       const postProps = await this.database
         .query(
           `
-            SELECT * FROM public.post WHERE id = $1;
+            SELECT user_id as "userId", * 
+            FROM public.post 
+            WHERE id = $1;
           `,
           [id],
         )
@@ -39,9 +41,33 @@ class PostRepository implements IPostRepository {
     }
   }
 
-  async getAll(): Promise<Post[]> {
+  async getAll(filter?: {
+    tags: string[];
+  }): Promise<(PostProps & { feedbacks: number })[]> {
     try {
-      const posts = await this.database
+      let posts: any[];
+
+      if (filter) {
+        const { tags } = filter;
+
+        posts = await this.database
+          .query(
+            `
+              SELECT p.user_id as "userId", COUNT(f.id) as feedbacks 
+              FROM public.post p LEFT JOIN public.feedback f ON p.id = f.post_id
+              WHERE p.tags && $1
+              GROUP BY p.id;
+            `,
+            [tags],
+          )
+          .then((rows) =>
+            rows.map((row) => ({ ...row, feedbacks: Number(row.feedbacks) })),
+          );
+
+        return posts;
+      }
+
+      posts = await this.database
         .query(
           `
             SELECT * FROM public.post;

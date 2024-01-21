@@ -14,11 +14,10 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: rate-my-code
     volumes:
-      - app-psql-volume
+      - pgdata:/var/lib/postgresql/data
       - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
 
   redis:
@@ -27,21 +26,21 @@ services:
     ports:
       - "6379:6379"
     volumes:
-      - app-redis-volume
+      - redis:/data
 
-  mongo:
-    image: mongo:latest
-    container_name: mongo-rmc
-    ports:
-      - "27017:27017"
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: root
-      MONGO_INITDB_DATABASE: rate-my-code
-    volumes:
-      - app-mongo-volume
+  # mongo:
+  #   image: mongo:latest
+  #   container_name: mongo-rmc
+  #   ports:
+  #     - "27017:27017"
+  #   environment:
+  #     MONGO_INITDB_ROOT_USERNAME: root
+  #     MONGO_INITDB_ROOT_PASSWORD: root
+  #     MONGO_INITDB_DATABASE: rate-my-code
+  #   volumes:
+  #     - .docker/mongo:/data/db
 
 volumes:
-  app-psql-volume:
-  app-redis-volume:
-  app-mongo-volume:
+  pgdata:
+  redis:
+  # mongo:

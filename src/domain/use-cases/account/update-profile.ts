@@ -4,6 +4,7 @@ export namespace UpdateProfile {
     firstName: string;
     lastName?: string;
     avatar?: string;
+    tags?: string[];
   };
 
   export type Result = boolean;

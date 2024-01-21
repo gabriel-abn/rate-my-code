@@ -11,16 +11,18 @@ type UserProps = {
   email: string;
   password: string;
   emailVerified: boolean;
+  tags: string[];
   role: string;
   roleId?: string;
 };
 
 class User extends Entity<UserProps> {
-  constructor(props: Omit<UserProps, "profile" | "emailVerified">, id?: string) {
+  constructor(props: Omit<UserProps, "profile" | "emailVerified" | "tags">, id?: string) {
     super(
       {
         profile: undefined,
         emailVerified: false,
+        tags: [],
         ...props,
       },
       id ? id : undefined,
@@ -52,6 +54,14 @@ class User extends Entity<UserProps> {
 
   get role(): string {
     return this.props.role;
+  }
+
+  get tags(): string[] {
+    return this.props.tags;
+  }
+
+  set tags(tags: string[]) {
+    this.props.tags = tags;
   }
 
   static restore(props: UserProps, id: string): User {

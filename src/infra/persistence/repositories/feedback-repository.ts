@@ -55,13 +55,37 @@ class FeedbackRepository implements IFeedbackRepository {
     );
   }
 
-  async getAll(): Promise<Feedback[]> {
-    const feedbacks = await this.database.query(
-      `
-        SELECT * 
+  async getAll(filter?: { user?: string; post?: string }): Promise<Feedback[]> {
+    let feedbacks: any[];
+
+    if (filter) {
+      if (filter.user) {
+        feedbacks = await this.database.query(
+          `
+          SELECT id, content, rating, rates_count as "rates", user_id, post_id
+          FROM public.feedback 
+          WHERE user_id = $1;
+        `,
+          [filter.user],
+        );
+      } else if (filter.post) {
+        feedbacks = await this.database.query(
+          `
+          SELECT id, content, rating, rates_count as "rates", user_id, post_id
+          FROM public.feedback
+          WHERE post_id = $1;
+        `,
+          [filter.post],
+        );
+      }
+    } else {
+      feedbacks = await this.database.query(
+        `
+        SELECT id, content, rating, rates_count as "rates", user_id, post_id
         FROM public.feedback;
       `,
-    );
+      );
+    }
 
     return feedbacks.map((feedback) => {
       if (!feedback) return null;

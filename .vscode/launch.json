@@ -31,6 +31,29 @@
       ],
       "console": "externalTerminal", // Attach to the integrated terminal
       "internalConsoleOptions": "neverOpen" // Prevent opening a separate debug console
+    },
+    {
+      "name": "Launch Dev Server",
+      "type": "node",
+      "request": "launch",
+      "restart": false,
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/tsx",
+      "args": [
+        "watch",
+        "src/main/server.ts"
+      ],
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": [
+        "<node_internals>/**",
+        "${workspaceFolder}/node_modules/**",
+        "${workspaceFolder}/dist/**",
+        "${workspaceFolder}/tests/**"
+      ]
     }
   ]
 }

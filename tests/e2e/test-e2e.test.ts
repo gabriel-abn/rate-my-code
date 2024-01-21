@@ -1,112 +1,178 @@
+import redisDb from "@infra/persistence/database/redis-db";
 import app from "@main/server";
 
 import { faker } from "@faker-js/faker";
-import redisDb from "@infra/persistence/database/redis-db";
 import request from "supertest";
 
-describe("Test e2e", () => {
+const fakeTags = [
+  "javascript",
+  "typescript",
+  "react",
+  "react-native",
+  "nodejs",
+  "express",
+  "mongodb",
+  "postgres",
+  "mysql",
+  "redis",
+  "docker",
+  "aws",
+];
+
+describe.sequential("Test e2e", () => {
   const account = {
     email: faker.internet.email(),
     password: "Gabriel!1234",
     role: "DEVELOPER",
   };
 
-  let signin: any,
-    confirmEmail: any,
-    updateProfile: any,
-    login: any,
-    createPost: any,
-    giveFeedback: any;
+  let signin: any, confirmEmail: any, updateProfile: any, login: any;
 
-  it("should create account", async () => {
-    signin = await request(app).post("/api/account/sign-in").send(account);
+  let createPost: any, giveFeedback: any;
 
-    expect(signin.status).toBe(200);
+  const post = {
+    title: faker.lorem.words(3),
+    content: faker.lorem.paragraph(3),
+    tags: Array.from({ length: 3 }, () => faker.helpers.arrayElement(fakeTags)),
+  };
+
+  describe("Account", () => {
+    it("should create account", async () => {
+      signin = await request(app).post("/api/account/sign-in").send(account);
+
+      expect(signin.status).toBe(200);
+    });
+
+    it("should confirm email", async () => {
+      const token = await redisDb.get(account.email);
+
+      confirmEmail = await request(app)
+        .post("/api/account/verify-email")
+        .send({ token: token, email: account.email })
+        .auth(signin.body.accessToken, { type: "bearer" });
+
+      expect(confirmEmail.status).toBe(200);
+    });
+
+    it("should login", async () => {
+      login = await request(app).post("/api/account/login").send(account);
+
+      expect(login.status).toBe(200);
+    });
+
+    it.skip("should be able to reset password", async () => {
+      const resetPassword = await request(app)
+        .post("/api/account/reset-password")
+        .send({ email: account.email });
+
+      expect(resetPassword.status).toBe(200);
+    });
+
+    it("should update profile", async () => {
+      const profile = {
+        firstName: faker.person.firstName(),
+        lastName: faker.person.lastName(),
+        avatar: faker.internet.url(),
+        tags: ["javascript", "typescript", "react"],
+      };
+
+      updateProfile = await request(app)
+        .put("/api/account/update-profile")
+        .send(profile)
+        .auth(login.body.accessToken, { type: "bearer" });
+
+      expect(updateProfile.status).toBe(200);
+    });
   });
 
-  it("should confirm email", async () => {
-    const token = await redisDb.get(account.email);
+  describe("Making posts and feedbacks", () => {
+    it("should create post", async () => {
+      createPost = await request(app)
+        .post("/api/post/make")
+        .send(post)
+        .auth(login.body.accessToken, { type: "bearer" });
 
-    confirmEmail = await request(app)
-      .post("/api/account/verify-email")
-      .send({ token: token, email: account.email })
-      .auth(signin.body.accessToken, { type: "bearer" });
+      expect(createPost.status).toBe(200);
+    });
 
-    expect(confirmEmail.status).toBe(200);
+    it("should be able to give feedback", async () => {
+      const feedback = {
+        postId: createPost.body.id,
+        content: faker.lorem.paragraph(3),
+      };
+
+      giveFeedback = await request(app)
+        .post("/api/feedback/make")
+        .send(feedback)
+        .auth(login.body.accessToken, { type: "bearer" });
+
+      expect(giveFeedback.status).toBe(200);
+    });
+
+    it("should be able to rate feedback", async () => {
+      const rateFeedback = await request(app)
+        .post("/api/feedback/rate")
+        .send({
+          postId: giveFeedback.body.id,
+          rating: 3,
+        })
+        .auth(login.body.accessToken, { type: "bearer" });
+
+      expect(rateFeedback.status).toBe(200);
+    });
+
+    it("should be able to update feedback rating", async () => {
+      const rateFeedback = await request(app)
+        .post("/api/feedback/rate")
+        .send({
+          postId: giveFeedback.body.id,
+          rating: 5,
+        })
+        .auth(login.body.accessToken, { type: "bearer" });
+
+      expect(rateFeedback.body.updatedRating).toBe(4);
+      expect(rateFeedback.status).toBe(200);
+    });
   });
 
-  it("should login", async () => {
-    login = await request(app).post("/api/account/login").send(account);
+  describe("User's feed and subscriptions", () => {
+    it("should be able to return user's feed data", async () => {
+      await request(app)
+        .put("/api/account/update-profile")
+        .send({
+          firstName: faker.person.firstName(),
+          tags: [post.tags[0], post.tags[1]],
+        })
+        .auth(login.body.accessToken, { type: "bearer" })
+        .expect(200);
 
-    expect(login.status).toBe(200);
-  });
+      const feed = await request(app)
+        .get("/api/user/feed")
+        .auth(login.body.accessToken, { type: "bearer" });
 
-  it("should update profile", async () => {
-    const profile = {
-      firstName: faker.person.firstName(),
-      lastName: faker.person.lastName(),
-      avatar: faker.internet.url(),
-    };
+      expect(feed.status).toBe(200);
+    });
 
-    updateProfile = await request(app)
-      .put("/api/account/update-profile")
-      .send(profile)
-      .auth(login.body.accessToken, { type: "bearer" });
+    it.skip("should be able to get specific post with all of its feedbacks", async () => {
+      const post = await request(app).get(`/api/posts/${createPost.body.id}`);
 
-    expect(updateProfile.status).toBe(200);
-  });
+      expect(post.status).toBe(200);
+    });
 
-  it("should create post", async () => {
-    const post = {
-      title: faker.lorem.words(3),
-      content: faker.lorem.paragraph(3),
-      tags: [faker.lorem.word(), faker.lorem.word()],
-    };
+    it.skip("should be able to get all posts from specific tags", async () => {
+      const postsTag = await request(app)
+        .get("/api/posts/")
+        .query({ tags: ["javascript"] });
 
-    createPost = await request(app)
-      .post("/api/post/make")
-      .send(post)
-      .auth(login.body.accessToken, { type: "bearer" });
+      expect(postsTag.status).toBe(200);
+    });
 
-    expect(createPost.status).toBe(200);
-  });
+    it.skip("should be able to get all posts and feedbacks from an user", async () => {
+      const postsFromUser = await request(app).get(`/api/user/posts`).send({
+        userId: createPost.body.author.id,
+      });
 
-  it("should be able to give feedback", async () => {
-    const feedback = {
-      postId: createPost.body.id,
-      content: faker.lorem.paragraph(3),
-    };
-
-    giveFeedback = await request(app)
-      .post("/api/feedback/make")
-      .send(feedback)
-      .auth(login.body.accessToken, { type: "bearer" });
-
-    expect(giveFeedback.status).toBe(200);
-  });
-
-  it("should be able to rate feedback", async () => {
-    const rateFeedback = await request(app)
-      .post("/api/feedback/rate")
-      .send({
-        postId: giveFeedback.body.id,
-        rating: 3,
-      })
-      .auth(login.body.accessToken, { type: "bearer" });
-
-    expect(rateFeedback.status).toBe(200);
-  });
-
-  it("should be able to update feedback rating", async () => {
-    const rateFeedback = await request(app)
-      .post("/api/feedback/rate")
-      .send({
-        postId: giveFeedback.body.id,
-        rating: 5,
-      })
-      .auth(login.body.accessToken, { type: "bearer" });
-
-    expect(rateFeedback.status).toBe(200);
-    expect(rateFeedback.body.updatedRating).toBe(4);
+      expect(postsFromUser.status).toBe(200);
+    });
   });
 });

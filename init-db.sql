@@ -11,6 +11,7 @@ CREATE TABLE "user" (
   email VARCHAR(255) NOT NULL,
   email_verified boolean DEFAULT false,
   role VARCHAR(255) DEFAULT 'developer',
+  tags VARCHAR(255) [],
   created_at TIMESTAMP NOT NULL DEFAULT current_timestamp,
   --
   CONSTRAINT "user_pkey" PRIMARY KEY (id)
@@ -47,9 +48,9 @@ DROP TABLE IF EXISTS profile CASCADE;
 
 CREATE TABLE profile (
   id VARCHAR(16) NOT NULL,
-  first_name VARCHAR(255) NOT NULL,
-  last_name VARCHAR(255),
-  avatar_url VARCHAR(255),
+  first_name VARCHAR(255) DEFAULT '',
+  last_name VARCHAR(255) DEFAULT '',
+  avatar_url VARCHAR(255) DEFAULT '',
   user_id VARCHAR(16) NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT current_timestamp,
   --

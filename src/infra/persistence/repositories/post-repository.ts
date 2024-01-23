@@ -45,26 +45,23 @@ class PostRepository implements IPostRepository {
     try {
       let posts: any[];
 
-      if (filter) {
+      if (filter?.tags) {
         const { tags } = filter;
 
         posts = await this.database
           .query(
             `
-              SELECT p.id, p.title, p.content, p.tags, 
-                p.user_id as "userId", COUNT(f.id) as "feedbacks"
-              FROM public.post p LEFT JOIN public.feedback f ON p.id = f.post_id
+              SELECT *
+              FROM public.posts_view p
               WHERE ${
                 tags.length > 1 ? "p.tags && $1::character varying[]" : "$1 = ANY(p.tags)"
               }
-              GROUP BY p.id;
             `,
             [tags.length > 1 ? tags : tags[0]],
           )
           .then((rows) => rows.map((row) => row))
           .catch((error) => {
-            console.log(error);
-            return null;
+            throw new DatabaseError("Error getting all posts: " + error.message, error);
           });
 
         return posts;
@@ -80,7 +77,7 @@ class PostRepository implements IPostRepository {
 
       return posts;
     } catch (error) {
-      throw new DatabaseError("Error getting all posts", error);
+      throw new DatabaseError("Error getting all posts " + error.name, error);
     }
   }
 

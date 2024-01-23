@@ -14,11 +14,16 @@ export abstract class Controller<T = any> {
       const body = this.schema.safeParse(request.body);
 
       if (body.success == false) {
-        const bodyError = JSON.parse(body.error.message);
+        const errors = body.error.issues.map((issue) => {
+          return {
+            path: issue.path[0],
+            message: issue.message,
+          };
+        });
 
         return badRequest({
           error: "INVALID_REQUEST_BODY",
-          message: bodyError[0].message,
+          expected: errors,
         });
       }
 

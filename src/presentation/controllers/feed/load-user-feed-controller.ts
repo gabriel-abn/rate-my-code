@@ -24,19 +24,21 @@ export class LoadUserFeedController extends Controller {
     const { tags } = await this.loadTags.execute({ limit: 7 });
 
     return {
-      posts: posts.map(({ post, author }) => ({
-        author: {
-          name: author.profile.firstName,
-          avatar: author.profile.avatar,
-        },
-        post: {
-          content: post.content,
-          feedbacks: post.feedbacks,
-          tags: post.tags,
-        },
-      })),
+      posts: posts
+        ? posts.map(({ post, author }) => ({
+            author: {
+              username: author.username,
+              avatar: author.profile.avatar,
+            },
+            post: {
+              content: post.content,
+              feedbacks: post.feedbacks,
+              tags: post.tags,
+            },
+          }))
+        : [],
       user: {
-        name: userProfile.firstName,
+        username: user.username,
         avatar: userProfile.avatar,
         feedbacks: user.feedbacks,
         rating: user.rating,

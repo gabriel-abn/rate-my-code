@@ -93,3 +93,17 @@ CREATE TABLE feedback (
   CONSTRAINT "feedback_user_id_fkey" FOREIGN KEY (user_id) REFERENCES "user" (id) ON DELETE CASCADE,
   CONSTRAINT "feedback_post_id_fkey" FOREIGN KEY (post_id) REFERENCES "post" (id) ON DELETE CASCADE
 );
+
+CREATE VIEW posts_view as
+SELECT
+  p.id,
+  p.title,
+  p.content,
+  p.tags,
+  p.user_id AS "userId",
+  count(f.id) AS feedbacks
+FROM
+  post p
+  LEFT JOIN feedback f ON p.id :: text = f.post_id :: text
+GROUP BY
+  p.id;

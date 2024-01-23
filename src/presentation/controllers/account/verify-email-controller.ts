@@ -16,8 +16,19 @@ export class VerifyEmailController extends Controller<VerifyEmailRequest> {
   }
 
   async run(request: HttpRequest<VerifyEmailRequest>): Promise<VerifyEmail.Result> {
-    const { email, token } = request.body;
+    try {
+      const { email, token } = request.body;
 
-    return await this.useCase.execute({ email, token });
+      return await this.useCase.execute({ email, token });
+    } catch (error) {
+      if (error.name === "EMAIL_ALREADY_VERIFIED") {
+        return {
+          isVerified: true,
+          message: error.name,
+        };
+      }
+
+      throw error;
+    }
   }
 }

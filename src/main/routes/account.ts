@@ -11,7 +11,7 @@ const routes = Router();
 
 routes.post("/sign-in", adaptRoute(signInFactory.create()));
 
-routes.post("/verify-email", authMiddleware(), adaptRoute(verifyEmailFactory.create()));
+routes.post("/verify-email", adaptRoute(verifyEmailFactory.create()));
 
 routes.post("/login", adaptRoute(loginFactory.create()));
 

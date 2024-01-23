@@ -13,7 +13,7 @@ class PostRepository implements IPostRepository {
           INSERT INTO public.post (id, title, content, tags, user_id)
           VALUES ($1, $2, $3, $4, $5);
         `,
-        [post.id, post.title, post.content, post.tags, post.userId],
+        [post.id, post.title, post.content, post.tags.join(";"), post.userId],
       );
     } catch (error) {
       throw new DatabaseError("Error saving post", error);
@@ -53,13 +53,22 @@ class PostRepository implements IPostRepository {
             `
               SELECT *
               FROM public.posts_view p
-              WHERE ${
-                tags.length > 1 ? "p.tags && $1::character varying[]" : "$1 = ANY(p.tags)"
-              }
+              WHERE ${tags
+                .map(
+                  (tag, index, array) =>
+                    `'${tag}' = ANY(string_to_array(tags, ';'))` + // BUG SQL INJECTION
+                    `${index == array.length - 1 ? ";" : " OR "}`,
+                )
+                .join("")}
             `,
-            [tags.length > 1 ? tags : tags[0]],
+            [],
           )
-          .then((rows) => rows.map((row) => row))
+          .then((rows) => {
+            return rows.map((row) => ({
+              ...row,
+              tags: row.tags.split(";"),
+            }));
+          })
           .catch((error) => {
             throw new DatabaseError("Error getting all posts: " + error.message, error);
           });
@@ -73,7 +82,12 @@ class PostRepository implements IPostRepository {
             SELECT * FROM public.post;
           `,
         )
-        .then((rows) => rows.map((row) => Post.restore(row, row.id)));
+        .then((rows) =>
+          rows.map((row) => ({
+            ...row,
+            tags: row.tags.split(";"),
+          })),
+        );
 
       return posts;
     } catch (error) {

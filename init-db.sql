@@ -67,7 +67,7 @@ CREATE TABLE post (
   id VARCHAR(16) NOT NULL,
   title VARCHAR(255) NOT NULL,
   content TEXT NOT NULL,
-  tags VARCHAR(255) [],
+  tags VARCHAR(255),
   user_id VARCHAR(16) NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT current_timestamp,
   --
@@ -104,6 +104,6 @@ SELECT
   count(f.id) AS feedbacks
 FROM
   post p
-  LEFT JOIN feedback f ON p.id :: text = f.post_id :: text
+  LEFT JOIN feedback f ON p.id = f.post_id
 GROUP BY
   p.id;

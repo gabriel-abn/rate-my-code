@@ -17,6 +17,15 @@ const fakeTags = [
   "redis",
   "docker",
   "aws",
+  "azure",
+  "google-cloud",
+  "kubernetes",
+  "graphql",
+  "apollo",
+  "jest",
+  "cypress",
+  "testing-library",
+  "storybook",
 ];
 
 describe.sequential("Test e2e", () => {
@@ -34,7 +43,7 @@ describe.sequential("Test e2e", () => {
   const post = {
     title: faker.lorem.words(3),
     content: faker.lorem.paragraph(3),
-    tags: Array.from({ length: 3 }, () => faker.helpers.arrayElement(fakeTags)),
+    tags: faker.helpers.arrayElements(fakeTags, { min: 3, max: 5 }),
   };
 
   describe("Account", () => {

@@ -9,6 +9,8 @@ class UserRepository implements IUserRepository, CheckEmailAvailability, CheckUs
   constructor(private database: RelationalDatabase) {}
 
   async get(filter: { username?: string; email?: string; id?: string }): Promise<User> {
+    const { username, email, id } = filter;
+
     const userProps = await this.database
       .query(
         `
@@ -24,30 +26,32 @@ class UserRepository implements IUserRepository, CheckEmailAvailability, CheckUs
               FROM public.instructor I)) R ON U.id = R.user_id
         LEFT JOIN public.profile p on U.id = p.user_id
         WHERE   ${
-          filter.username
+          username
             ? "U.username = $1"
-            : filter.email
+            : email
               ? "U.email = $1"
-              : "U.id = $1"
-        }
+              : id
+                ? "U.id = $1"
+                : "LIMIT 1"
+        };
         `,
-        [{ ...filter }],
+        [username || email || id],
       )
-      .then((rows) => rows[0])
-      .then((props) => {
-        if (!props) {
-          throw new DatabaseError("User not found");
-        }
+      .then((rows) => {
+        const props = rows[0];
 
         return {
-          ...props,
           profile: {
             firstName: props.firstName,
             lastName: props.lastName,
             avatar: props.avatar,
             tags: props.tags,
           },
+          ...props,
         };
+      })
+      .catch((error) => {
+        throw new DatabaseError("User not found. " + error.message, error);
       });
 
     const user = User.restore(userProps, filter.id);

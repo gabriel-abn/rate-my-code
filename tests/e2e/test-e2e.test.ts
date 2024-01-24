@@ -87,11 +87,19 @@ describe.sequential("Test e2e", () => {
       };
 
       updateProfile = await request(app)
-        .put("/api/account/update-profile")
+        .put("/api/account/profile")
         .send(profile)
         .auth(login.body.accessToken, { type: "bearer" });
 
       expect(updateProfile.status).toBe(200);
+    });
+
+    it("should return user's profile", async () => {
+      const profile = await request(app)
+        .get("/api/account/profile")
+        .auth(login.body.accessToken, { type: "bearer" });
+
+      expect(profile.status).toBe(200);
     });
   });
 
@@ -148,7 +156,7 @@ describe.sequential("Test e2e", () => {
   describe("User's feed and subscriptions", () => {
     it("should be able to return user's feed data", async () => {
       await request(app)
-        .put("/api/account/update-profile")
+        .put("/api/account/profile")
         .send({
           firstName: faker.person.firstName(),
           tags: [post.tags[0], post.tags[1]],

@@ -122,6 +122,32 @@ class PostRepository implements IPostRepository {
       throw new DatabaseError("Error updating post", error);
     }
   }
+
+  async listTags(): Promise<string[]> {
+    try {
+      const tags = await this.database
+        .query(
+          `
+            SELECT p.tags
+            FROM public.post p
+            WHERE p.tags IS NOT NULL;
+          `,
+        )
+        .then((rows: { tags: string }[]) => {
+          const uniqueTags = new Set<string>();
+
+          rows.forEach((row) => {
+            const tags = row.tags.split(";");
+            tags.forEach((tag) => uniqueTags.add(tag));
+          });
+          return Array.from(uniqueTags);
+        });
+
+      return tags;
+    } catch (error) {
+      throw new DatabaseError("Error listing tags", error);
+    }
+  }
 }
 
 export default new PostRepository(postgres);

@@ -196,4 +196,12 @@ describe.sequential("Test e2e", () => {
       expect(postsFromUser.status).toBe(200);
     });
   });
+
+  describe("Common fetches", () => {
+    it("should be able to return all tags", async () => {
+      const tags = await request(app).get("/api/utils/tags/");
+
+      expect(tags.status).toBe(200);
+    });
+  });
 });

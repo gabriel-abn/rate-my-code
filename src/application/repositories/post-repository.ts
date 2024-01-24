@@ -6,4 +6,5 @@ export interface IPostRepository {
   getAll(filter?: { tags?: string[]; userId?: string }): Promise<PostProps[]>;
   delete(id: string): Promise<void>;
   update(post: Post): Promise<void>;
+  listTags(): Promise<string[]>;
 }

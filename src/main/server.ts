@@ -6,6 +6,7 @@ import userRoutes from "./routes/user";
 
 import cors from "cors";
 import express, { Request, Response, json } from "express";
+import utilsRouter from "./routes/utils";
 
 const app = express();
 
@@ -25,6 +26,6 @@ app.get("/", (req: Request, res: Response) => {
   });
 });
 
-app.use("/api", [feedbackRoutes, accountRoutes, postRouter, userRoutes]);
+app.use("/api", [feedbackRoutes, accountRoutes, postRouter, userRoutes, utilsRouter]);
 
 export default app;

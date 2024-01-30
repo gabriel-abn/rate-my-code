@@ -1,7 +1,7 @@
 import { Redis } from "ioredis";
-import { DatabaseError, KeyValueDatabase } from "../common";
+import { DatabaseError, KeyValueDatabase, ListDatabase } from "../common";
 
-class RedisDB implements KeyValueDatabase {
+class RedisDB implements KeyValueDatabase, ListDatabase {
   private static instance: RedisDB;
   private client: Redis;
 
@@ -16,7 +16,7 @@ class RedisDB implements KeyValueDatabase {
     try {
       await this.client.set(key, value);
     } catch (err) {
-      throw new DatabaseError(err);
+      throw new DatabaseError("Redis error: " + err.message);
     }
   }
 
@@ -24,7 +24,7 @@ class RedisDB implements KeyValueDatabase {
     try {
       return await this.client.get(key);
     } catch (err) {
-      throw new DatabaseError(err);
+      throw new DatabaseError("Redis error: " + err.message);
     }
   }
 
@@ -32,7 +32,7 @@ class RedisDB implements KeyValueDatabase {
     try {
       await this.client.del(key);
     } catch (err) {
-      throw new DatabaseError(err);
+      throw new DatabaseError("Redis error: " + err.message);
     }
   }
 
@@ -40,7 +40,7 @@ class RedisDB implements KeyValueDatabase {
     try {
       await this.client.flushall();
     } catch (err) {
-      throw new DatabaseError(err);
+      throw new DatabaseError("Redis error: " + err.message);
     }
   }
 
@@ -54,7 +54,53 @@ class RedisDB implements KeyValueDatabase {
 
       return false;
     } catch (err) {
-      throw new DatabaseError(err);
+      throw new DatabaseError("Redis error: " + err.message);
+    }
+  }
+
+  async getList(listName: string): Promise<string[]> {
+    try {
+      return await this.client.lrange("list:" + listName, 0, -1);
+    } catch (err) {
+      throw new DatabaseError("Redis error: " + err.message);
+    }
+  }
+
+  async addToList(listName: string, ...value: string[]): Promise<void> {
+    try {
+      await this.client.lpush("list:" + listName, ...value);
+    } catch (err) {
+      throw new DatabaseError("Redis error: " + err.message);
+    }
+  }
+
+  async getLists(pattern?: string): Promise<string[]> {
+    try {
+      if (pattern) {
+        return await this.client.keys("list:" + pattern);
+      }
+
+      return await this.client.keys("list:*");
+    } catch (err) {
+      throw new DatabaseError("Redis error: " + err.message);
+    }
+  }
+
+  async removeFromList(listName: string, ...value: string[]): Promise<void> {
+    try {
+      value.forEach(async (val: string) => {
+        await this.client.lrem("list:" + listName, 0, val);
+      });
+    } catch (err) {
+      throw new DatabaseError("Redis error: " + err.message);
+    }
+  }
+
+  async deleteList(listName: string): Promise<void> {
+    try {
+      await this.client.del("list:" + listName);
+    } catch (err) {
+      throw new DatabaseError("Redis error: " + err.message);
     }
   }
 

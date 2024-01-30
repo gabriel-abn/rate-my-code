@@ -17,7 +17,7 @@ export class LoadPostsUseCase implements LoadPosts.UseCase {
 
         return Promise.all(
           posts.map(async (post) => {
-            const author = await this.userRepository.getById(post.userId);
+            const author = await this.userRepository.get({ id: post.userId });
 
             return {
               post,

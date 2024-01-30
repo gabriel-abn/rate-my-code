@@ -1,20 +1,34 @@
 import { IPostRepository } from "@application/repositories";
 import { Post, PostProps } from "@domain/entities";
-import { DatabaseError, RelationalDatabase } from "../common";
+import { DatabaseError, ListDatabase, RelationalDatabase } from "../common";
 import postgres from "../database/postgres";
+import redisDb from "../database/redis-db";
 
 class PostRepository implements IPostRepository {
-  constructor(private readonly database: RelationalDatabase) {}
+  constructor(
+    private readonly relational: RelationalDatabase,
+    private readonly list: ListDatabase,
+  ) {}
 
   async save(post: Post): Promise<void> {
     try {
-      await this.database.execute(
-        `
-          INSERT INTO public.post (id, title, content, tags, user_id)
-          VALUES ($1, $2, $3, $4, $5);
+      await this.relational
+        .execute(
+          `
+          INSERT INTO public.post (id, title, content, user_id)
+          VALUES ($1, $2, $3, $4);
         `,
-        [post.id, post.title, post.content, post.tags.join(";"), post.userId],
-      );
+          [post.id, post.title, post.content, post.userId],
+        )
+        .then(async () => {
+          await this.list.addToList("tags", ...post.tags);
+
+          Promise.all(
+            post.tags.map(async (tag) => {
+              await this.list.addToList(`tag:${tag}`, post.id);
+            }),
+          );
+        });
     } catch (error) {
       throw new DatabaseError("Error saving post", error);
     }
@@ -22,7 +36,7 @@ class PostRepository implements IPostRepository {
 
   async get(id: string): Promise<Post> {
     try {
-      const postProps = await this.database
+      const postProps = await this.relational
         .query(
           `
             SELECT user_id as "userId", * 
@@ -31,7 +45,15 @@ class PostRepository implements IPostRepository {
           `,
           [id],
         )
-        .then((rows) => rows[0]);
+        .then(async (rows) => {
+          if (rows.length === 0) {
+            throw new DatabaseError("Post not found");
+          }
+
+          const tags = await this.list.getList(`post:${id}`);
+
+          return { ...rows[0], tags };
+        });
 
       const post = Post.restore(postProps, id);
 
@@ -47,45 +69,37 @@ class PostRepository implements IPostRepository {
 
       if (filter?.tags) {
         const { tags } = filter;
+        const postsIds = new Set<string>();
 
-        posts = await this.database
-          .query(
-            `
-              SELECT *
-              FROM public.posts_view p
-              WHERE ${tags
-                .map(
-                  (tag, index, array) =>
-                    `'${tag}' = ANY(string_to_array(tags, ';'))` + // BUG SQL INJECTION
-                    `${index == array.length - 1 ? ";" : " OR "}`,
-                )
-                .join("")}
-            `,
-            [],
-          )
-          .then((rows) => {
-            return rows.map((row) => ({
-              ...row,
-              tags: row.tags.split(";"),
-            }));
-          })
-          .catch((error) => {
-            throw new DatabaseError("Error getting all posts: " + error.message, error);
-          });
+        await Promise.all(
+          tags.map(async (tag) => {
+            const ids = await this.list.getList(`tag:${tag}`);
+
+            ids.forEach((id) => postsIds.add(id));
+          }),
+        );
+
+        posts = await Promise.all(
+          Array.from(postsIds).map(async (id) => {
+            const post = await this.get(id);
+
+            return post;
+          }),
+        );
 
         return posts;
       }
 
-      posts = await this.database
+      posts = await this.relational
         .query(
           `
             SELECT * FROM public.post;
           `,
         )
         .then((rows) =>
-          rows.map((row) => ({
+          rows.map(async (row) => ({
             ...row,
-            tags: row.tags.split(";"),
+            tags: await this.list.getList(`post:${row.id}`),
           })),
         );
 
@@ -97,7 +111,7 @@ class PostRepository implements IPostRepository {
 
   async delete(id: string): Promise<void> {
     try {
-      await this.database.execute(
+      await this.relational.execute(
         `
           DELETE FROM public.posts WHERE id = $1;
         `,
@@ -110,7 +124,7 @@ class PostRepository implements IPostRepository {
 
   async update(post: Post): Promise<void> {
     try {
-      await this.database.execute(
+      await this.relational.execute(
         `
           UPDATE public.post
           SET title = $1, content = $2
@@ -125,23 +139,7 @@ class PostRepository implements IPostRepository {
 
   async listTags(): Promise<string[]> {
     try {
-      const tags = await this.database
-        .query(
-          `
-            SELECT p.tags
-            FROM public.post p
-            WHERE p.tags IS NOT NULL;
-          `,
-        )
-        .then((rows: { tags: string }[]) => {
-          const uniqueTags = new Set<string>();
-
-          rows.forEach((row) => {
-            const tags = row.tags.split(";");
-            tags.forEach((tag) => uniqueTags.add(tag));
-          });
-          return Array.from(uniqueTags);
-        });
+      const tags = (await this.list.getLists("tags:*")).map((tag) => tag.split(":")[-1]);
 
       return tags;
     } catch (error) {
@@ -150,4 +148,4 @@ class PostRepository implements IPostRepository {
   }
 }
 
-export default new PostRepository(postgres);
+export default new PostRepository(postgres, redisDb);

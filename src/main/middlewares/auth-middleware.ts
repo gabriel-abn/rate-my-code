@@ -4,7 +4,7 @@ import { NextFunction, Request, Response } from "express";
 
 export const authMiddleware = (permission?: number) => {
   return async (req: Request, res: Response, next: NextFunction) => {
-    let accessToken: string[] | undefined;
+    let accessToken: string[];
 
     try {
       // "Bearer TOKEN"
@@ -24,6 +24,13 @@ export const authMiddleware = (permission?: number) => {
 
     try {
       const { id, role } = jwtCrypter.decrypt(accessToken[1]);
+
+      if (id === undefined || role === undefined) {
+        return res.status(404).json({
+          error: "AUTHENTICATION_ERROR",
+          message: "Invalid token.",
+        });
+      }
 
       if (permission) {
         if (role > permission) {

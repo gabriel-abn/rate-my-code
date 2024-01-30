@@ -34,6 +34,7 @@ describe.sequential("Test e2e", () => {
     password: "Gabriel!1234",
     role: faker.helpers.arrayElement(["DEVELOPER", "INSTRUCTOR"]),
     username: faker.internet.userName(),
+    tags: faker.helpers.arrayElements(fakeTags, { min: 3, max: 5 }),
   };
 
   let signin: any, confirmEmail: any, updateProfile: any, login: any;

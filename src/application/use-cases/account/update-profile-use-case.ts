@@ -8,7 +8,7 @@ export class UpdateProfileUseCase implements UpdateProfile.UseCase {
   async execute(params: UpdateProfile.Params): Promise<UpdateProfile.Result> {
     const { userId, firstName, lastName, avatar, tags } = params;
 
-    const oldUser = await this.userRepo.getById(userId);
+    const oldUser = await this.userRepo.get({ id: userId });
 
     if (!oldUser.isVerified) {
       throw new ApplicationError("Email not verified.", "EMAIL_NOT_VERIFIED");

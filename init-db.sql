@@ -12,7 +12,6 @@ CREATE TABLE "user" (
   email_verified boolean DEFAULT false,
   username VARCHAR(255) NOT NULL,
   role VARCHAR(255) DEFAULT 'developer',
-  tags VARCHAR(255) [],
   created_at TIMESTAMP NOT NULL DEFAULT current_timestamp,
   --
   CONSTRAINT "user_pkey" PRIMARY KEY (id)
@@ -67,7 +66,6 @@ CREATE TABLE post (
   id VARCHAR(16) NOT NULL,
   title VARCHAR(255) NOT NULL,
   content TEXT NOT NULL,
-  tags VARCHAR(255),
   user_id VARCHAR(16) NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT current_timestamp,
   --
@@ -99,7 +97,6 @@ SELECT
   p.id,
   p.title,
   p.content,
-  p.tags,
   p.user_id AS "userId",
   count(f.id) AS feedbacks
 FROM

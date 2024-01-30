@@ -19,7 +19,9 @@ export class VerifyEmailUseCase implements VerifyEmail.UseCase {
   ) {}
 
   async execute(params: VerifyEmail.Params): Promise<VerifyEmail.Result> {
-    const [user, isVerified] = await this.userRepo.getByEmail(params.email);
+    const user = await this.userRepo.get({ email: params.email });
+
+    const isVerified = user.isVerified;
 
     if (!user) {
       throw new ApplicationError("User not found.", "EMAIL_NOT_FOUND");

@@ -19,7 +19,7 @@ export class UpdateProfileController extends Controller<UpdateProfileRequest> {
 
   async run(request: HttpRequest<UpdateProfileRequest>): Promise<{ updated: boolean }> {
     const { firstName, lastName, avatar, tags } = request.body;
-    const userId = request.headers["userId"];
+    const { userId } = request.headers;
 
     const response = await this.useCase.execute({
       userId,

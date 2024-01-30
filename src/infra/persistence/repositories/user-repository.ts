@@ -2,21 +2,27 @@ import { IUserRepository } from "@application/repositories";
 import { CheckEmailAvailability, CheckUserEmail } from "@application/use-cases";
 import { User } from "@domain/entities";
 import { randomUUID } from "crypto";
-import { DatabaseError, RelationalDatabase } from "../common";
+import { DatabaseError, ListDatabase, RelationalDatabase } from "../common";
 import postgres from "../database/postgres";
+import redisDb from "../database/redis-db";
 
 class UserRepository implements IUserRepository, CheckEmailAvailability, CheckUserEmail {
-  constructor(private database: RelationalDatabase) {}
+  constructor(
+    private readonly relational: RelationalDatabase,
+    private readonly list: ListDatabase,
+  ) {}
 
-  async get(filter: { username?: string; email?: string; id?: string }): Promise<User> {
+  async get(
+    filter: Partial<{ username: string; email: string; id: string }>,
+  ): Promise<User> {
     const { username, email, id } = filter;
 
-    const userProps = await this.database
+    const userProps = await this.relational
       .query(
         `
         SELECT  U.id, U.email, U.password, U.username,
-                U.email_verified AS "emailVerified", R.id AS "roleId",
-                p.first_name AS "firstName", p.last_name AS "lastName", p.avatar_url as "avatar", u.tags
+                U.email_verified AS "emailVerified", R.id AS "roleId", u.role,
+                p.first_name AS "firstName", p.last_name AS "lastName", p.avatar_url as "avatar"
         FROM    public.user U
         JOIN (
               (SELECT *
@@ -26,45 +32,47 @@ class UserRepository implements IUserRepository, CheckEmailAvailability, CheckUs
               FROM public.instructor I)) R ON U.id = R.user_id
         LEFT JOIN public.profile p on U.id = p.user_id
         WHERE   ${
-          username
-            ? "U.username = $1"
-            : email
-              ? "U.email = $1"
-              : id
-                ? "U.id = $1"
-                : "LIMIT 1"
+          username ? "U.username = $1" : email ? "U.email = $1" : id ? "U.id = $1" : ""
         };
         `,
         [username || email || id],
       )
-      .then((rows) => {
+      .then(async (rows) => {
         const props = rows[0];
 
+        if (!props) {
+          throw new DatabaseError("User not found");
+        }
+
+        const tags = await this.list.getList("user:" + props.id).catch((error) => {
+          throw new DatabaseError("User's tags not found " + error.message, error);
+        });
+
         return {
+          ...props,
           profile: {
             firstName: props.firstName,
             lastName: props.lastName,
             avatar: props.avatar,
-            tags: props.tags,
+            tags,
           },
-          ...props,
         };
       })
       .catch((error) => {
         throw new DatabaseError("User not found. " + error.message, error);
       });
 
-    const user = User.restore(userProps, filter.id);
+    const user = User.restore(userProps, userProps.id);
 
     return user;
   }
 
   async checkEmail(email: string): Promise<boolean> {
-    const user = await this.database
+    const user = await this.relational
       .query(
         `
           SELECT  id
-          FROM    public."user"
+          FROM    public.user
           WHERE   email = $1;
         `,
         [email],
@@ -79,7 +87,7 @@ class UserRepository implements IUserRepository, CheckEmailAvailability, CheckUs
   }
 
   async verifyEmail(email: string): Promise<void> {
-    await this.database.query(
+    await this.relational.query(
       `
           UPDATE  public.user
           SET     email_verified = true
@@ -89,34 +97,8 @@ class UserRepository implements IUserRepository, CheckEmailAvailability, CheckUs
     );
   }
 
-  async getByEmail(email: string): Promise<[User, boolean]> {
-    const user = await this.database
-      .query(
-        `
-          SELECT  u.id, u.username, u.email, u.password, 
-                  u.email_verified AS "emailVerified", r.id as "roleId"
-          FROM    public.user u JOIN (
-              (SELECT * 
-              FROM public.developer d)
-              UNION
-              (SELECT *
-              FROM  public.instructor i)) r 
-          ON u.id = r.user_id
-          WHERE   u.email = $1;
-        `,
-        [email],
-      )
-      .then((rows) => rows[0]);
-
-    if (!user) {
-      return [null, false];
-    }
-
-    return [User.restore(user, user.id), user.emailVerified];
-  }
-
   async save(user: User): Promise<string> {
-    await this.database
+    await this.relational
       .execute(
         `
           INSERT INTO public.user (id, email, password, username, role)
@@ -125,7 +107,7 @@ class UserRepository implements IUserRepository, CheckEmailAvailability, CheckUs
         [user.id, user.email, user.password, user.username, user.role],
       )
       .then(async () => {
-        await this.database.execute(
+        await this.relational.execute(
           `
             INSERT INTO public.profile (id, user_id)
             VALUES ($1, $2);
@@ -135,7 +117,7 @@ class UserRepository implements IUserRepository, CheckEmailAvailability, CheckUs
       })
       .then(async () => {
         if (user.role == "INSTRUCTOR") {
-          await this.database.execute(
+          await this.relational.execute(
             `
               INSERT INTO public.instructor (id, user_id)
               VALUES ($1, $2);
@@ -144,7 +126,7 @@ class UserRepository implements IUserRepository, CheckEmailAvailability, CheckUs
           );
         }
 
-        await this.database.execute(
+        await this.relational.execute(
           `
           INSERT INTO public.developer (id, user_id)
           VALUES ($1, $2);
@@ -156,68 +138,37 @@ class UserRepository implements IUserRepository, CheckEmailAvailability, CheckUs
     return user.id;
   }
 
-  async getById(id: string): Promise<User> {
-    const userProps = await this.database
-      .query(
-        `
-        SELECT  U.id, U.email, U.password, U.username,
-                U.email_verified AS "emailVerified", R.id AS "roleId",
-                p.first_name AS "firstName", p.last_name AS "lastName", p.avatar_url as "avatar", u.tags
-        FROM    public.user U
-        JOIN (
-              (SELECT *
-              FROM public.developer D)
-        UNION
-              (SELECT *
-              FROM public.instructor I)) R ON U.id = R.user_id
-        LEFT JOIN public.profile p on U.id = p.user_id
-        WHERE   u.id = $1;
-        `,
-        [id],
-      )
-      .then((rows) => rows[0])
-      .then((props) => {
-        if (!props) {
-          throw new DatabaseError("User not found");
-        }
-
-        return {
-          ...props,
-          profile: {
-            firstName: props.firstName,
-            lastName: props.lastName,
-            avatar: props.avatar,
-            tags: props.tags,
-          },
-        };
-      });
-
-    const user = User.restore(userProps, id);
-
-    return user;
-  }
-
   async update(id: string, user: User): Promise<boolean> {
-    const updated = await this.database
+    const updated = await this.relational
       .execute(
         `
         UPDATE  public.user
-        SET     password = $2, role = $3, tags = $4
+        SET     password = $2, role = $3
         WHERE   id = $1;
-      `,
-        [id, user.password, user.role, user.tags],
+        `,
+        [id, user.password, user.role],
       )
       .then(
         async () =>
-          await this.database.execute(
-            `
-          UPDATE  public.profile
-          SET     first_name = $2, last_name = $3, avatar_url = $4
-          WHERE   user_id = $1;
-        `,
-            [id, user.profile.firstName, user.profile.lastName, user.profile.avatar],
-          ),
-      );
+          await this.relational
+            .execute(
+              `
+              UPDATE  public.profile
+              SET     first_name = $2, last_name = $3, avatar_url = $4
+              WHERE   user_id = $1;
+              `,
+              [id, user.profile.firstName, user.profile.lastName, user.profile.avatar],
+            )
+            .then(async () => {
+              await this.list.deleteList("user:" + id);
+              await this.list.addToList("user:" + id, ...user.tags);
+
+              return true;
+            }),
+      )
+      .catch((error) => {
+        throw new DatabaseError("User not updated. " + error.message, error);
+      });
 
     if (!updated) {
       return false;
@@ -227,4 +178,4 @@ class UserRepository implements IUserRepository, CheckEmailAvailability, CheckUs
   }
 }
 
-export default new UserRepository(postgres);
+export default new UserRepository(postgres, redisDb);

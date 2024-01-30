@@ -8,7 +8,7 @@ export class GetUserUseCase implements GetUser.UseCase {
   ) {}
 
   async execute(params: GetUser.Params): Promise<GetUser.Result> {
-    const user = await this.userRepository.getById(params.userId);
+    const user = await this.userRepository.get({ id: params.userId });
 
     const feedbacks = await this.feedbacksRepository.getAll({
       user: user.id,

@@ -13,7 +13,9 @@ export class LoginUseCase implements Login.UseCase {
   async execute(params: Login.Params): Promise<Login.Result> {
     const { email, password } = params;
 
-    const [user, verified] = await this.userRepo.getByEmail(email);
+    const user = await this.userRepo.get({ email });
+
+    const verified = user.isVerified;
 
     if (!user) {
       throw new ApplicationError(

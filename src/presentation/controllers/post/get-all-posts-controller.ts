@@ -9,14 +9,12 @@ export class GetAllPostsController extends Controller<any> {
     private readonly userRepository: IUserRepository,
   ) {
     super();
-    this.schema = z.object({
-      username: z.string().optional(),
-    });
+    this.schema = z.object({});
   }
 
   async run(request: HttpRequest<any>): Promise<PostProps[]> {
-    const { username } = request.body;
-    const { tags } = request.params;
+    const { username } = request.params;
+    let { tags } = request.query;
 
     let userId: string | undefined;
 
@@ -28,17 +26,17 @@ export class GetAllPostsController extends Controller<any> {
       }
     }
 
+    tags = Array.isArray(tags) ? tags : new Array(tags);
+
     if (userId && tags) {
       return await this.postRepository.getAll({
         userId,
-        tags: Array.isArray(tags) && tags.length > 1 ? [...tags] : [tags],
+        tags,
       });
     } else if (userId) {
       return await this.postRepository.getAll({ userId });
     } else if (tags) {
-      return await this.postRepository.getAll({
-        tags: Array.isArray(tags) && tags.length > 1 ? [...tags] : [tags],
-      });
+      return await this.postRepository.getAll({ tags });
     } else {
       return await this.postRepository.getAll();
     }

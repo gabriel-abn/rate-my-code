@@ -15,7 +15,18 @@ export class GetUserUseCase implements GetUser.UseCase {
     });
 
     return {
-      ...user.getProps(),
+      tags: user.tags,
+      username: user.username,
+      email: user.email,
+      emailVerified: user.isVerified,
+      password: user.password,
+      role: user.role,
+      roleId: null,
+      profile: {
+        avatar: user.profile.avatar,
+        firstName: user.profile.firstName,
+        lastName: user.profile.lastName,
+      },
       feedbacks: feedbacks.length,
       rating: feedbacks.reduce((acc, curr) => acc + curr.rating, 0) / feedbacks.length,
     };

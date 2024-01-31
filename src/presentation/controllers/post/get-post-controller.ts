@@ -1,24 +1,21 @@
+import ApplicationError from "@application/common/application-error";
 import { GetPostWithFeedback } from "@domain/use-cases/posts/get-post-with-feedback";
 import { Controller, HttpRequest } from "@presentation/common";
 
 import { z } from "zod";
 
-const schema = z.object({
-  id: z.string(),
-});
-
-export type GetPostsWithFeedbacksControllerRequest = z.infer<typeof schema>;
-
-export class GetPostWithFeedbacksController extends Controller<GetPostsWithFeedbacksControllerRequest> {
+export class GetPostWithFeedbacksController extends Controller<null> {
   constructor(private readonly useCase: GetPostWithFeedback.UseCase) {
     super();
-    this.schema = schema;
+    this.schema = z.object({});
   }
 
-  async run(
-    request: HttpRequest<GetPostsWithFeedbacksControllerRequest>,
-  ): Promise<GetPostWithFeedback.Result> {
-    const { id } = request.body;
+  async run(request: HttpRequest<null>): Promise<GetPostWithFeedback.Result> {
+    const { id } = request.params;
+
+    if (!id) {
+      throw new ApplicationError("No id provided", "NO_ID_PROVIDED");
+    }
 
     const post = await this.useCase.execute({ id });
 

@@ -27,7 +27,6 @@
         "${relativeFile}",
         "--config",
         "./tests/config/vitest.integration.config.ts",
-        "--test-timeout=0"
       ],
       "console": "externalTerminal", // Attach to the integrated terminal
       "internalConsoleOptions": "neverOpen" // Prevent opening a separate debug console
@@ -42,7 +41,6 @@
       "args": [
         "--config",
         "./tests/config/vitest.e2e.config.ts",
-        "--test-timeout=0"
       ],
       "console": "externalTerminal", // Attach to the integrated terminal
       "internalConsoleOptions": "neverOpen" // Prevent opening a separate debug console

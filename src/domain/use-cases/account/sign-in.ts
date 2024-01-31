@@ -4,6 +4,7 @@ export namespace SignIn {
     password: string;
     username: string;
     role: string;
+    tags: string[];
   };
 
   export type Result = {

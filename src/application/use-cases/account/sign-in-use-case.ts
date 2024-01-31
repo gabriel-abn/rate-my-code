@@ -38,6 +38,7 @@ export class SignInUseCase implements SignIn.UseCase {
         password: hashedPassword,
         role: data.role,
         username: data.username,
+        tags: data.tags,
       },
       randomUUID().split("-")[0].toUpperCase(),
     );

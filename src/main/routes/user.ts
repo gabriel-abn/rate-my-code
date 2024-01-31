@@ -8,7 +8,7 @@ const routes = Router();
 
 routes.get("/feed", authMiddleware(), adaptRoute(loadUserFeedFactory.create()));
 
-routes.get("/:userId/posts", adaptRoute(getAllPostsFactory.create()));
+routes.get("/:username/posts", adaptRoute(getAllPostsFactory.create()));
 
 const userRoutes = Router().use("/user", routes);
 

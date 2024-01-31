@@ -18,12 +18,11 @@ type UserProps = {
 };
 
 class User extends Entity<UserProps> {
-  constructor(props: Omit<UserProps, "profile" | "emailVerified" | "tags">, id?: string) {
+  constructor(props: Omit<UserProps, "profile" | "emailVerified">, id?: string) {
     super(
       {
         profile: undefined,
         emailVerified: false,
-        tags: [],
         ...props,
       },
       id ? id : undefined,

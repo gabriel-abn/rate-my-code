@@ -17,6 +17,7 @@ const signInSchema = z.object({
     .string()
     .min(3, "Username must be at least 3 characters.")
     .max(32, "Username must be at most 32 characters."),
+  tags: z.array(z.string()),
 });
 
 type SignInRequest = z.infer<typeof signInSchema>;
@@ -28,13 +29,14 @@ export class SignInController extends Controller<SignInRequest> {
   }
 
   async run(request: HttpRequest<SignInRequest>): Promise<object> {
-    const { email, password, role, username } = request.body;
+    const { email, password, role, username, tags } = request.body;
 
     const response = await this.useCase.execute({
       email,
       password,
       role,
       username,
+      tags,
     });
 
     return response;

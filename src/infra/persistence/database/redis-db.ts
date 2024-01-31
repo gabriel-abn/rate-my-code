@@ -86,6 +86,14 @@ class RedisDB implements KeyValueDatabase, ListDatabase {
     }
   }
 
+  async listSize(listName: string): Promise<number> {
+    try {
+      return await this.client.llen("list:" + listName);
+    } catch (err) {
+      throw new DatabaseError("Redis error: " + err.message);
+    }
+  }
+
   async removeFromList(listName: string, ...value: string[]): Promise<void> {
     try {
       value.forEach(async (val: string) => {

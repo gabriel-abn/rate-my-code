@@ -15,56 +15,51 @@ class UserRepository implements IUserRepository, CheckEmailAvailability, CheckUs
   async get(
     filter: Partial<{ username: string; email: string; id: string }>,
   ): Promise<User> {
-    const { username, email, id } = filter;
+    try {
+      const { username, email, id } = filter;
 
-    const userProps = await this.relational
-      .query(
-        `
-        SELECT  U.id, U.email, U.password, U.username,
-                U.email_verified AS "emailVerified", R.id AS "roleId", u.role,
-                p.first_name AS "firstName", p.last_name AS "lastName", p.avatar_url as "avatar"
-        FROM    public.user U
-        JOIN (
-              (SELECT *
-              FROM public.developer D)
-        UNION
-              (SELECT *
-              FROM public.instructor I)) R ON U.id = R.user_id
-        LEFT JOIN public.profile p on U.id = p.user_id
-        WHERE   ${
-          username ? "U.username = $1" : email ? "U.email = $1" : id ? "U.id = $1" : ""
-        };
-        `,
-        [username || email || id],
-      )
-      .then(async (rows) => {
-        const props = rows[0];
+      const userProps = await this.relational
+        .query(
+          `
+          SELECT  *
+          FROM public.users_view
+          WHERE ${
+            username ? "username = $1" : email ? "email = $1" : id ? "id = $1" : ""
+          };
+          `,
+          [username || email || id],
+        )
+        .then(async (rows) => {
+          const props = rows[0];
 
-        if (!props) {
-          throw new DatabaseError("User not found");
-        }
+          if (!props) {
+            throw new DatabaseError("User not found");
+          }
 
-        const tags = await this.list.getList("user:" + props.id).catch((error) => {
-          throw new DatabaseError("User's tags not found " + error.message, error);
+          const tags = await this.list.getList("user:" + props.id).catch((error) => {
+            throw new DatabaseError("User's tags not found " + error.message, error);
+          });
+
+          return {
+            ...props,
+            tags,
+            profile: {
+              firstName: props.firstName,
+              lastName: props.lastName,
+              avatar: props.avatar,
+            },
+          };
+        })
+        .catch((error) => {
+          throw new DatabaseError("User not found. " + error.message, error);
         });
 
-        return {
-          ...props,
-          profile: {
-            firstName: props.firstName,
-            lastName: props.lastName,
-            avatar: props.avatar,
-            tags,
-          },
-        };
-      })
-      .catch((error) => {
-        throw new DatabaseError("User not found. " + error.message, error);
-      });
+      const user = User.restore(userProps, userProps.id);
 
-    const user = User.restore(userProps, userProps.id);
-
-    return user;
+      return user;
+    } catch (error) {
+      throw new DatabaseError("User not found. " + error.message, error);
+    }
   }
 
   async checkEmail(email: string): Promise<boolean> {
@@ -98,44 +93,51 @@ class UserRepository implements IUserRepository, CheckEmailAvailability, CheckUs
   }
 
   async save(user: User): Promise<string> {
-    await this.relational
-      .execute(
-        `
-          INSERT INTO public.user (id, email, password, username, role)
-          VALUES ($1, $2, $3, $4, $5);
-        `,
-        [user.id, user.email, user.password, user.username, user.role],
-      )
-      .then(async () => {
-        await this.relational.execute(
+    try {
+      await this.relational
+        .execute(
           `
-            INSERT INTO public.profile (id, user_id)
-            VALUES ($1, $2);
+            INSERT INTO public.user (id, email, password, username, role)
+            VALUES ($1, $2, $3, $4, $5);
           `,
-          [randomUUID().split("-")[0].toUpperCase(), user.id],
-        );
-      })
-      .then(async () => {
-        if (user.role == "INSTRUCTOR") {
+          [user.id, user.email, user.password, user.username, user.role],
+        )
+        .then(async () => {
           await this.relational.execute(
             `
-              INSERT INTO public.instructor (id, user_id)
+              INSERT INTO public.profile (id, user_id)
               VALUES ($1, $2);
-              `,
+            `,
+            [randomUUID().split("-")[0].toUpperCase(), user.id],
+          );
+        })
+        .then(async () => {
+          if (user.role == "INSTRUCTOR") {
+            await this.relational.execute(
+              `
+                INSERT INTO public.instructor (id, user_id)
+                VALUES ($1, $2);
+                `,
+              [randomUUID().split("-")[0], user.id],
+            );
+          }
+
+          await this.relational.execute(
+            `
+            INSERT INTO public.developer (id, user_id)
+            VALUES ($1, $2);
+            `,
             [randomUUID().split("-")[0], user.id],
           );
-        }
+        })
+        .then(async () => {
+          await this.list.addToList("user:" + user.id, ...user.tags);
+        });
 
-        await this.relational.execute(
-          `
-          INSERT INTO public.developer (id, user_id)
-          VALUES ($1, $2);
-          `,
-          [randomUUID().split("-")[0], user.id],
-        );
-      });
-
-    return user.id;
+      return user.id;
+    } catch (error) {
+      throw new DatabaseError("User not saved. " + error.message, error);
+    }
   }
 
   async update(id: string, user: User): Promise<boolean> {

@@ -10,14 +10,18 @@ export class LoadPostsUseCase implements LoadPosts.UseCase {
   async execute(params: LoadPosts.Params): Promise<LoadPosts.Result> {
     const result = await this.postRepository
       .getAll({ tags: params.tags })
-      .then((posts) => {
+      .then(async (posts) => {
         if (posts.length === 0) {
           return [];
         }
 
-        return Promise.all(
+        return await Promise.all(
           posts.map(async (post) => {
-            const author = await this.userRepository.get({ id: post.userId });
+            const author = await this.userRepository
+              .get({
+                id: post.userId,
+              })
+              .then((author) => author.getProps());
 
             return {
               post,
@@ -27,13 +31,6 @@ export class LoadPostsUseCase implements LoadPosts.UseCase {
         );
       });
 
-    if (result.length === 0) {
-      return [];
-    }
-
-    return result.map((res) => ({
-      post: res.post,
-      author: res.author.getProps(),
-    }));
+    return result;
   }
 }

@@ -7,4 +7,5 @@ export interface IPostRepository {
   delete(id: string): Promise<void>;
   update(post: Post): Promise<void>;
   listTags(): Promise<string[]>;
+  mostUsedTags(): Promise<string[]>;
 }

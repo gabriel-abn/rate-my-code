@@ -1,3 +1,4 @@
+import ApplicationError from "@application/common/application-error";
 import { IFeedbackRepository, IPostRepository } from "@application/repositories";
 import { GetPostWithFeedback } from "@domain/use-cases/posts/get-post-with-feedback";
 
@@ -13,7 +14,7 @@ export class GetPostsWithFeedbacksUseCase implements GetPostWithFeedback.UseCase
     const post = await this.postRepository.get(request.id);
 
     if (!post) {
-      throw new Error("Post not found");
+      throw new ApplicationError("Post not found", "POST_NOT_FOUND");
     }
 
     const feedbacks = await this.feedbackRepository.getAll({ post: post.id });

@@ -156,15 +156,6 @@ describe.sequential("Test e2e", () => {
 
   describe("User's feed and subscriptions", () => {
     it("should be able to return user's feed data", async () => {
-      await request(app)
-        .put("/api/account/profile")
-        .send({
-          firstName: faker.person.firstName(),
-          tags: [post.tags[0], post.tags[1]],
-        })
-        .auth(login.body.accessToken, { type: "bearer" })
-        .expect(200);
-
       const feed = await request(app)
         .get("/api/user/feed")
         .auth(login.body.accessToken, { type: "bearer" });
@@ -183,11 +174,12 @@ describe.sequential("Test e2e", () => {
         .get("/api/post/")
         .query({ tags: ["javascript"] });
 
+      expect(postsTag.status).toBe(200);
+
       const postsTag2 = await request(app)
         .get("/api/post/")
         .query({ tags: ["typescript", "aws"] });
 
-      expect(postsTag.status).toBe(200);
       expect(postsTag2.status).toBe(200);
     });
 

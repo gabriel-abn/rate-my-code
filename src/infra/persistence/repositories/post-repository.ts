@@ -39,20 +39,24 @@ class PostRepository implements IPostRepository {
       const postProps = await this.relational
         .query(
           `
-            SELECT user_id as "userId", * 
-            FROM public.post 
-            WHERE id = $1;
+            SELECT p.*, p.user_id AS "userId"
+            FROM public.post p
+            WHERE p.id = $1;
           `,
           [id],
         )
-        .then(async (rows) => {
-          if (rows.length === 0) {
+        .then((rows: any[]) => {
+          if (!rows) {
             throw new DatabaseError("Post not found");
           }
 
-          const tags = await this.list.getList(`post:${id}`);
+          // const tags = await this.list.getList(`post:${id}`);
 
-          return { ...rows[0], tags };
+          // return { ...rows[0], tags };
+          return { ...rows[0] };
+        })
+        .catch((err) => {
+          throw new DatabaseError("Post not found: " + err.message);
         });
 
       const post = Post.restore(postProps, id);
@@ -71,20 +75,25 @@ class PostRepository implements IPostRepository {
         const { tags } = filter;
         const postsIds = new Set<string>();
 
-        await Promise.all(
-          tags.map(async (tag) => {
-            const ids = await this.list.getList(`tag:${tag}`);
+        for (const tag of tags) {
+          const ids = await this.list.getList(`tag:${tag}`);
+          ids.forEach((id) => postsIds.add(id));
+        }
 
-            ids.forEach((id) => postsIds.add(id));
-          }),
+        const postsRows = await this.relational.query(
+          `
+            SELECT *, user_id AS "userId"
+            FROM public.post 
+            WHERE id = ANY($1);
+          `,
+          [Array.from(postsIds)],
         );
 
         posts = await Promise.all(
-          Array.from(postsIds).map(async (id) => {
-            const post = await this.get(id);
-
-            return post;
-          }),
+          postsRows.map(async (row) => ({
+            ...row,
+            tags: await this.list.getList(`post:${row.id}`),
+          })),
         );
 
         return posts;
@@ -139,11 +148,30 @@ class PostRepository implements IPostRepository {
 
   async listTags(): Promise<string[]> {
     try {
-      const tags = (await this.list.getLists("tags:*")).map((tag) => tag.split(":")[-1]);
+      const tags = await this.list.getLists("tag:*");
 
-      return tags;
+      return tags.map((tag) => tag.split(":")[2]);
     } catch (error) {
       throw new DatabaseError("Error listing tags", error);
+    }
+  }
+
+  async mostUsedTags(): Promise<string[]> {
+    try {
+      const tags = await this.listTags();
+
+      const tagsWithCount = await Promise.all(
+        tags.map(async (tag) => ({
+          tag,
+          count: await this.list.listSize(`tag:${tag}`),
+        })),
+      );
+
+      tagsWithCount.sort((a, b) => b.count - a.count);
+
+      return tagsWithCount.map((tag) => tag.tag);
+    } catch (error) {
+      throw new DatabaseError("Error getting most used tags: " + error.message, error);
     }
   }
 }

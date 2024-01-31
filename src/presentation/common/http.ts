@@ -1,6 +1,7 @@
 export type HttpRequest<T> = {
   body?: T;
   params?: any;
+  query?: any;
   headers?:
     | {
         [key: string]: any;

@@ -104,3 +104,34 @@ FROM
   LEFT JOIN feedback f ON p.id = f.post_id
 GROUP BY
   p.id;
+
+CREATE VIEW users_view as
+SELECT
+  U.id,
+  U.email,
+  U.password,
+  U.username,
+  U.email_verified AS "emailVerified",
+  R.id AS "roleId",
+  u.role,
+  p.first_name AS "firstName",
+  p.last_name AS "lastName",
+  p.avatar_url as "avatar"
+FROM
+  public.user U
+  JOIN (
+    (
+      SELECT
+        *
+      FROM
+        public.developer D
+    )
+    UNION
+    (
+      SELECT
+        *
+      FROM
+        public.instructor I
+    )
+  ) R ON U.id = R.user_id
+  LEFT JOIN public.profile P on U.id = P.user_id;

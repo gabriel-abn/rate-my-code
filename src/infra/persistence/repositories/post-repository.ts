@@ -28,6 +28,8 @@ class PostRepository implements IPostRepository {
               await this.list.addToList(`tag:${tag}`, post.id);
             }),
           );
+
+          await this.list.addToList(`post:${post.id}`, ...post.tags);
         });
     } catch (error) {
       throw new DatabaseError("Error saving post", error);
@@ -50,16 +52,15 @@ class PostRepository implements IPostRepository {
             throw new DatabaseError("Post not found");
           }
 
-          // const tags = await this.list.getList(`post:${id}`);
-
-          // return { ...rows[0], tags };
           return { ...rows[0] };
         })
         .catch((err) => {
           throw new DatabaseError("Post not found: " + err.message);
         });
 
-      const post = Post.restore(postProps, id);
+      const tags = await this.list.getList(`post:${id}`);
+
+      const post = Post.restore({ ...postProps, tags }, id);
 
       return post;
     } catch (error) {
@@ -67,7 +68,7 @@ class PostRepository implements IPostRepository {
     }
   }
 
-  async getAll(filter?: { tags: string[] }): Promise<PostProps[]> {
+  async getAll(filter?: { tags: string[]; userId: string }): Promise<PostProps[]> {
     try {
       let posts: any[];
 
@@ -84,9 +85,31 @@ class PostRepository implements IPostRepository {
           `
             SELECT *, user_id AS "userId"
             FROM public.post 
-            WHERE id = ANY($1);
+            WHERE id = ANY($1)
+            ORDER BY created_at DESC;
           `,
           [Array.from(postsIds)],
+        );
+
+        posts = await Promise.all(
+          postsRows.map(async (row) => ({
+            ...row,
+            tags: await this.list.getList(`post:${row.id}`),
+          })),
+        );
+
+        return posts;
+      }
+
+      if (filter?.userId) {
+        const postsRows = await this.relational.query(
+          `
+              SELECT *, user_id AS "userId"
+              FROM public.post
+              WHERE user_id = $1
+              ORDER BY created_at DESC;
+            `,
+          [filter.userId],
         );
 
         posts = await Promise.all(

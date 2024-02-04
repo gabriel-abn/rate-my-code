@@ -27,6 +27,8 @@ export class MakePostController extends Controller<MakePostRequest> {
       userId,
     });
 
+    console.log(post);
+
     return {
       id: post.id,
     };

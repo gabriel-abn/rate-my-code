@@ -25,7 +25,7 @@ export const authMiddleware = (permission?: number) => {
     try {
       const { id, role } = jwtCrypter.decrypt(accessToken[1]);
 
-      if (id === undefined || role === undefined) {
+      if (id === undefined) {
         return res.status(404).json({
           error: "AUTHENTICATION_ERROR",
           message: "Invalid token.",

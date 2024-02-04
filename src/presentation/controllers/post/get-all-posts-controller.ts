@@ -13,32 +13,45 @@ export class GetAllPostsController extends Controller<any> {
   }
 
   async run(request: HttpRequest<any>): Promise<PostProps[]> {
-    const { username } = request.params;
-    let { tags } = request.query;
+    try {
+      let posts: PostProps[] = [];
 
-    let userId: string | undefined;
+      const { username } = request.params;
+      let { tags } = request.query;
 
-    if (username) {
-      const user = await this.userRepository.get({ username });
+      let userId: string | undefined;
 
-      if (user) {
-        userId = user.id;
+      if (username) {
+        const user = await this.userRepository.get({ username });
+
+        if (user) {
+          userId = user.id;
+        }
       }
-    }
 
-    tags = Array.isArray(tags) ? tags : new Array(tags);
+      if (tags) tags = Array.isArray(tags) ? tags : new Array(tags);
 
-    if (userId && tags) {
-      return await this.postRepository.getAll({
-        userId,
-        tags,
-      });
-    } else if (userId) {
-      return await this.postRepository.getAll({ userId });
-    } else if (tags) {
-      return await this.postRepository.getAll({ tags });
-    } else {
-      return await this.postRepository.getAll();
+      if (userId && tags) {
+        posts = await this.postRepository.getAll({
+          tags,
+          userId,
+        });
+
+        return posts;
+      }
+
+      if (userId) {
+        posts = await this.postRepository.getAll({ userId });
+      } else if (tags) {
+        posts = await this.postRepository.getAll({ tags });
+      } else {
+        posts = await this.postRepository.getAll();
+      }
+
+      return posts;
+    } catch (error) {
+      console.error(error);
+      throw error;
     }
   }
 }
